@@ -5,52 +5,52 @@
 export const COURSES = [
   {
     id: 'frog-hollow',
-    name: 'Frog Hollow (18)',
+    name: 'Frog Hollow',
     pars: [4, 5, 3, 4, 5, 3, 4, 3, 4, 4, 5, 4, 4, 3, 4, 3, 4, 5],
   },
   {
     id: 'back-creek',
-    name: 'Back Creek (18)',
+    name: 'Back Creek',
     pars: [4, 3, 4, 4, 5, 4, 4, 3, 4, 4, 5, 4, 4, 3, 4, 5, 3, 4],
   },
   {
     id: 'st-annes',
-    name: 'Saint Annes (18)',
+    name: 'Saint Annes',
     pars: [4, 3, 4, 3, 5, 4, 4, 3, 5, 4, 5, 4, 3, 4, 3, 4, 5, 4],
   },
   {
     id: 'odessa-national',
-    name: 'Odessa National (18)',
+    name: 'Odessa National',
     pars: [4, 5, 4, 4, 5, 3, 4, 4, 3, 4, 5, 4, 4, 4, 3, 5, 3, 4],
   },
   {
     id: 'rock-manor',
-    name: 'Rock Manor (18)',
+    name: 'Rock Manor',
     pars: [5, 4, 3, 4, 4, 4, 3, 4, 5, 4, 5, 3, 5, 3, 4, 4, 4, 3],
   },
   {
     id: 'salt-pond',
-    name: 'Salt Pond (18)',
+    name: 'Salt Pond',
     pars: [3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3],
   },
   {
     id: 'bear-trap-gk',
-    name: 'Bear Trap Grizzly-Kodiak (18)',
+    name: 'Bear Trap Grizzly-Kodiak',
     pars: [4, 5, 4, 3, 4, 4, 4, 3, 5, 4, 4, 5, 3, 4, 4, 5, 3, 4],
   },
   {
     id: 'downingtown-cc',
-    name: 'Downingtown Country Club (18)',
+    name: 'Downingtown Country Club',
     pars: [4, 4, 3, 4, 4, 4, 4, 5, 4, 4, 4, 3, 5, 4, 3, 5, 3, 5],
   },
   {
     id: 'delcastle',
-    name: 'Delcastle (18)',
+    name: 'Delcastle',
     pars: [4, 5, 4, 4, 4, 3, 5, 4, 3, 4, 4, 4, 4, 3, 5, 4, 3, 5],
   },
   {
     id: 'ed-oliver',
-    name: 'Ed Oliver (18)',
+    name: 'Ed Oliver',
     pars: [4, 4, 4, 5, 3, 5, 4, 4, 3, 4, 4, 4, 3, 4, 4, 4, 3, 4],
   },
   // Example of a 9-hole course — just include 9 pars.
