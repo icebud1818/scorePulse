@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthContext.jsx'
 import { useData } from '../data/DataContext.jsx'
 import { ACHIEVEMENTS } from '../data/achievements.js'
 import { calculateHandicap } from '../utils/handicap.js'
+import { isCountable, isIncomplete } from '../utils/rounds.js'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -12,7 +13,9 @@ export default function Dashboard() {
 
   const handicap = calculateHandicap(rounds)
   const totalRounds = rounds.length
-  const eighteenHoleRounds = rounds.filter((r) => r.holes?.length === 18)
+  const eighteenHoleRounds = rounds.filter(
+    (r) => r.holes?.length === 18 && isCountable(r)
+  )
   const bestScore = eighteenHoleRounds.length
     ? Math.min(...eighteenHoleRounds.map((r) => r.totalScore))
     : null
@@ -47,7 +50,12 @@ export default function Dashboard() {
           <h2 style={{ marginTop: 0 }}>Recent round</h2>
           {lastRound ? (
             <div>
-              <div><strong>{lastRound.courseName}</strong></div>
+              <div>
+                <strong>{lastRound.courseName}</strong>
+                {isIncomplete(lastRound) && (
+                  <span className="tag incomplete" style={{ marginLeft: 8 }}>Incomplete</span>
+                )}
+              </div>
               <div className="muted">{lastRound.date}</div>
               <div style={{ marginTop: 8 }}>
                 Score: <strong>{lastRound.totalScore}</strong> (par {lastRound.totalPar})

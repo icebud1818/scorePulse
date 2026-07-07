@@ -6,6 +6,8 @@
 //     - round: the newly-submitted round { date, courseName, holes: [{ par, score, putts?, ob?, gir? }], totalScore, totalPar }
 //     - allRounds: array of all previously-saved rounds (does NOT include the new one)
 
+import { isCountable } from '../utils/rounds.js'
+
 export const ACHIEVEMENTS = [
   {
     id: 'first-round',
@@ -45,4 +47,45 @@ export function evaluateAchievements(round, allRounds, alreadyEarnedIds) {
     }
   }
   return newlyEarned
+}
+
+// Recompute the full set of earned achievements from scratch, given the
+// complete set of rounds. Rounds are replayed in chronological order so that
+// order-dependent checks (e.g. "first round", which tests allRounds.length)
+// resolve exactly as they did when rounds were originally submitted.
+//
+// Because this derives the earned set purely from the current rounds, it is
+// the source of truth after any add/edit/delete: an achievement that no
+// longer applies to any round simply won't be in the returned set.
+export function computeEarnedAchievements(allRounds) {
+  // Incomplete rounds don't count toward achievements — and they're excluded
+  // from the replay entirely, so they also don't advance order-dependent
+  // checks like "first round".
+  const sorted = allRounds.filter(isCountable).sort(byChronology)
+  const earned = new Set()
+  const prior = []
+  for (const round of sorted) {
+    for (const ach of ACHIEVEMENTS) {
+      if (earned.has(ach.id)) continue
+      try {
+        if (ach.check(round, prior)) earned.add(ach.id)
+      } catch (e) {
+        console.warn(`Achievement "${ach.id}" check threw:`, e)
+      }
+    }
+    prior.push(round)
+  }
+  return earned
+}
+
+function byChronology(a, b) {
+  if (a.date !== b.date) return a.date < b.date ? -1 : 1
+  return tsMillis(a.createdAt) - tsMillis(b.createdAt)
+}
+
+function tsMillis(ts) {
+  if (!ts) return 0
+  if (typeof ts.toMillis === 'function') return ts.toMillis()
+  if (typeof ts.seconds === 'number') return ts.seconds * 1000
+  return 0
 }

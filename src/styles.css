@@ -94,6 +94,22 @@ th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--bor
 th { color: var(--muted); font-weight: 500; font-size: 0.85rem; }
 
 .muted { color: var(--muted); }
+.tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  vertical-align: middle;
+}
+.tag.incomplete {
+  color: var(--warn);
+  border-color: var(--warn);
+  background: rgba(251, 191, 36, 0.12);
+}
 .error { color: var(--danger); margin: 8px 0; }
 .success { color: var(--accent); margin: 8px 0; }
 .center { text-align: center; }

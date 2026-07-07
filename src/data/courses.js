@@ -1,6 +1,10 @@
 // Add your courses here. Each course has 18 holes with pars.
 // The custom-course option in the AddRound form lets users enter pars ad-hoc,
 // so you only need to put your regular courses in this file.
+//
+// Set `par3: true` on a course to mark it as a par-3 / executive course.
+// Rounds played there are still logged and viewable, but they don't count
+// toward your handicap or achievements.
 
 export const COURSES = [
   {
@@ -32,6 +36,7 @@ export const COURSES = [
     id: 'salt-pond',
     name: 'Salt Pond',
     pars: [3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3],
+    par3: true,
   },
   {
     id: 'bear-trap-gk',

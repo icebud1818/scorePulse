@@ -5,11 +5,17 @@ import {
   fetchRounds,
   recordAchievement,
   saveRound,
+  updateRound as updateRoundFs,
   deleteRound as deleteRoundFs,
+  deleteAchievement as deleteAchievementFs,
 } from '../utils/firestore.js'
-import { evaluateAchievements } from './achievements.js'
+import { ACHIEVEMENTS, computeEarnedAchievements } from './achievements.js'
 
 const DataContext = createContext(null)
+
+// Only achievements defined in the app are ever added or removed here, so a
+// definition that's been deleted from the code never nukes a stored doc.
+const KNOWN_IDS = new Set(ACHIEVEMENTS.map((a) => a.id))
 
 export function DataProvider({ children }) {
   const { user } = useAuth()
@@ -42,39 +48,87 @@ export function DataProvider({ children }) {
     reload()
   }, [reload])
 
+  // Recompute earned achievements from the full set of rounds and reconcile
+  // Firestore + local state: award anything newly qualifying, revoke anything
+  // that no longer fits. Returns the achievements newly earned (for the toast).
+  const syncAchievements = useCallback(
+    async (nextRounds, priorEarnedIds) => {
+      const computed = computeEarnedAchievements(nextRounds)
+      const prior = new Set(priorEarnedIds)
+      const toAdd = [...computed].filter((id) => !prior.has(id))
+      const toRemove = [...prior].filter((id) => KNOWN_IDS.has(id) && !computed.has(id))
+
+      await Promise.all([
+        ...toAdd.map((id) => recordAchievement(user.uid, id)),
+        ...toRemove.map((id) => deleteAchievementFs(user.uid, id)),
+      ])
+
+      const nextEarnedIds = [...prior]
+        .filter((id) => !toRemove.includes(id))
+        .concat(toAdd)
+      setEarnedIds(nextEarnedIds)
+
+      const newlyEarned = ACHIEVEMENTS.filter((a) => toAdd.includes(a.id))
+      return { newlyEarned }
+    },
+    [user]
+  )
+
   const addRound = useCallback(
     async (round) => {
       if (!user) throw new Error('Not authenticated')
       const id = await saveRound(user.uid, round)
       const newRound = { id, ...round }
-      const priorRounds = rounds
-      const priorEarned = earnedIds
-      const newlyEarned = evaluateAchievements(newRound, priorRounds, priorEarned)
-      for (const ach of newlyEarned) {
-        await recordAchievement(user.uid, ach.id)
-      }
-      setRounds([newRound, ...priorRounds])
-      setEarnedIds([...priorEarned, ...newlyEarned.map((a) => a.id)])
+      const nextRounds = [newRound, ...rounds]
+      setRounds(nextRounds)
+      const { newlyEarned } = await syncAchievements(nextRounds, earnedIds)
       setLastEarned(newlyEarned)
       return { id, newlyEarned }
     },
-    [user, rounds, earnedIds]
+    [user, rounds, earnedIds, syncAchievements]
+  )
+
+  const editRound = useCallback(
+    async (roundId, round) => {
+      if (!user) throw new Error('Not authenticated')
+      await updateRoundFs(user.uid, roundId, round)
+      const nextRounds = rounds.map((r) =>
+        r.id === roundId ? { ...r, ...round } : r
+      )
+      setRounds(nextRounds)
+      const { newlyEarned } = await syncAchievements(nextRounds, earnedIds)
+      setLastEarned(newlyEarned)
+      return { id: roundId, newlyEarned }
+    },
+    [user, rounds, earnedIds, syncAchievements]
   )
 
   const removeRound = useCallback(
     async (roundId) => {
       if (!user) return
       await deleteRoundFs(user.uid, roundId)
-      setRounds((rs) => rs.filter((r) => r.id !== roundId))
+      const nextRounds = rounds.filter((r) => r.id !== roundId)
+      setRounds(nextRounds)
+      await syncAchievements(nextRounds, earnedIds)
     },
-    [user]
+    [user, rounds, earnedIds, syncAchievements]
   )
 
   const clearLastEarned = useCallback(() => setLastEarned([]), [])
 
   return (
     <DataContext.Provider
-      value={{ rounds, earnedIds, loading, addRound, removeRound, lastEarned, clearLastEarned, reload }}
+      value={{
+        rounds,
+        earnedIds,
+        loading,
+        addRound,
+        editRound,
+        removeRound,
+        lastEarned,
+        clearLastEarned,
+        reload,
+      }}
     >
       {children}
     </DataContext.Provider>

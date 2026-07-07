@@ -8,6 +8,7 @@ import Login from './pages/Login.jsx'
 import Signup from './pages/Signup.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import AddRound from './pages/AddRound.jsx'
+import EditRound from './pages/EditRound.jsx'
 import RoundsList from './pages/RoundsList.jsx'
 import RoundDetail from './pages/RoundDetail.jsx'
 import BestScores from './pages/BestScores.jsx'
@@ -36,6 +37,7 @@ function AppRoutes() {
         <Route path="/add" element={wrapProtected(<AddRound />)} />
         <Route path="/rounds" element={wrapProtected(<RoundsList />)} />
         <Route path="/rounds/:id" element={wrapProtected(<RoundDetail />)} />
+        <Route path="/rounds/:id/edit" element={wrapProtected(<EditRound />)} />
         <Route path="/best" element={wrapProtected(<BestScores />)} />
         <Route path="/achievements" element={wrapProtected(<Achievements />)} />
         <Route path="*" element={<Navigate to="/" replace />} />

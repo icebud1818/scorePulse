@@ -35,6 +35,16 @@ export async function saveRound(uid, round) {
   return ref.id
 }
 
+export async function updateRound(uid, roundId, round) {
+  // merge:true preserves createdAt; arrays (holes) are replaced wholesale,
+  // which is what we want when the user re-enters scores.
+  await setDoc(
+    doc(db, 'users', uid, 'rounds', roundId),
+    { ...round, updatedAt: serverTimestamp() },
+    { merge: true }
+  )
+}
+
 export async function deleteRound(uid, roundId) {
   await deleteDoc(doc(db, 'users', uid, 'rounds', roundId))
 }
@@ -48,4 +58,8 @@ export async function recordAchievement(uid, achievementId) {
   await setDoc(doc(db, 'users', uid, 'achievements', achievementId), {
     earnedAt: serverTimestamp(),
   })
+}
+
+export async function deleteAchievement(uid, achievementId) {
+  await deleteDoc(doc(db, 'users', uid, 'achievements', achievementId))
 }
