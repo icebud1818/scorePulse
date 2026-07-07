@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { useData } from '../data/DataContext.jsx'
@@ -8,6 +9,44 @@ import { isCountable, isIncomplete } from '../utils/rounds.js'
 export default function Dashboard() {
   const { user } = useAuth()
   const { rounds, earnedIds, loading } = useData()
+
+  // Putting / GIR / OOB aggregates, over rounds that count (excludes par-3
+  // and incomplete rounds, matching the rest of the dashboard).
+  const stats = useMemo(() => {
+    const countable = rounds.filter(isCountable)
+    let playedHoles = 0
+    let girHoles = 0
+    let obShots = 0
+    let puttRounds = 0
+    let puttTotal = 0
+
+    for (const r of countable) {
+      const holes = Array.isArray(r.holes) ? r.holes : []
+      const played = holes.filter((h) => typeof h.score === 'number')
+      playedHoles += played.length
+      for (const h of played) {
+        if (h.gir === true) girHoles++
+        if (typeof h.ob === 'number') obShots += h.ob
+      }
+      // Only rounds with putts logged on every played hole feed the per-round
+      // putting average, so partial data can't skew it low.
+      if (played.length > 0 && played.every((h) => typeof h.putts === 'number')) {
+        puttRounds++
+        puttTotal += played.reduce((s, h) => s + h.putts, 0)
+      }
+    }
+
+    return {
+      puttsPerRound: puttRounds ? puttTotal / puttRounds : null,
+      puttRounds,
+      girPct: playedHoles ? (girHoles / playedHoles) * 100 : null,
+      girHoles,
+      playedHoles,
+      obPerRound: countable.length ? obShots / countable.length : null,
+      obShots,
+      countableRounds: countable.length,
+    }
+  }, [rounds])
 
   if (loading) return <div className="container center muted">Loading…</div>
 
@@ -42,6 +81,43 @@ export default function Dashboard() {
         <div className="card">
           <div className="muted">Best 18-hole score</div>
           <div style={{ fontSize: '2rem', fontWeight: 700 }}>{bestScore ?? '—'}</div>
+        </div>
+      </div>
+
+      <h2>Your stats</h2>
+      <div className="grid cols-3">
+        <div className="card">
+          <div className="muted">Putts / round</div>
+          <div style={{ fontSize: '2rem', fontWeight: 700 }}>
+            {stats.puttsPerRound == null ? '—' : stats.puttsPerRound.toFixed(1)}
+          </div>
+          <div className="muted" style={{ fontSize: '0.85rem' }}>
+            {stats.puttRounds
+              ? `over ${stats.puttRounds} fully-tracked round${stats.puttRounds === 1 ? '' : 's'}`
+              : 'Log putts on a round to see this'}
+          </div>
+        </div>
+        <div className="card">
+          <div className="muted">Greens in regulation</div>
+          <div style={{ fontSize: '2rem', fontWeight: 700 }}>
+            {stats.girPct == null ? '—' : `${Math.round(stats.girPct)}%`}
+          </div>
+          <div className="muted" style={{ fontSize: '0.85rem' }}>
+            {stats.playedHoles
+              ? `${stats.girHoles} of ${stats.playedHoles} holes`
+              : 'No holes logged yet'}
+          </div>
+        </div>
+        <div className="card">
+          <div className="muted">Out of bounds / round</div>
+          <div style={{ fontSize: '2rem', fontWeight: 700 }}>
+            {stats.obPerRound == null ? '—' : stats.obPerRound.toFixed(1)}
+          </div>
+          <div className="muted" style={{ fontSize: '0.85rem' }}>
+            {stats.countableRounds
+              ? `${stats.obShots} total over ${stats.countableRounds} round${stats.countableRounds === 1 ? '' : 's'}`
+              : 'No rounds logged yet'}
+          </div>
         </div>
       </div>
 
