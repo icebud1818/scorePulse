@@ -24,33 +24,10 @@ export function DataProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [lastEarned, setLastEarned] = useState([])
 
-  const reload = useCallback(async () => {
-    if (!user) {
-      setRounds([])
-      setEarnedIds([])
-      setLoading(false)
-      return
-    }
-    setLoading(true)
-    try {
-      const [rs, achs] = await Promise.all([
-        fetchRounds(user.uid),
-        fetchEarnedAchievements(user.uid),
-      ])
-      setRounds(rs)
-      setEarnedIds(achs.map((a) => a.id))
-    } finally {
-      setLoading(false)
-    }
-  }, [user])
-
-  useEffect(() => {
-    reload()
-  }, [reload])
-
   // Recompute earned achievements from the full set of rounds and reconcile
   // Firestore + local state: award anything newly qualifying, revoke anything
-  // that no longer fits. Returns the achievements newly earned (for the toast).
+  // that no longer fits. Only writes to Firestore when the set actually
+  // changes. Returns the achievements newly earned (for the toast).
   const syncAchievements = useCallback(
     async (nextRounds, priorEarnedIds) => {
       const computed = computeEarnedAchievements(nextRounds)
@@ -73,6 +50,34 @@ export function DataProvider({ children }) {
     },
     [user]
   )
+
+  const reload = useCallback(async () => {
+    if (!user) {
+      setRounds([])
+      setEarnedIds([])
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    try {
+      const [rs, achs] = await Promise.all([
+        fetchRounds(user.uid),
+        fetchEarnedAchievements(user.uid),
+      ])
+      setRounds(rs)
+      // Self-heal on load: reconcile stored achievements against what the
+      // rounds actually earn now. This revokes achievements that no longer
+      // qualify (e.g. one earned on a course since flagged par-3) without
+      // waiting for the next add/edit/delete.
+      await syncAchievements(rs, achs.map((a) => a.id))
+    } finally {
+      setLoading(false)
+    }
+  }, [user, syncAchievements])
+
+  useEffect(() => {
+    reload()
+  }, [reload])
 
   const addRound = useCallback(
     async (round) => {
