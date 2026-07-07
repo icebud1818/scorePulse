@@ -4,16 +4,17 @@ import { useAuth } from '../auth/AuthContext.jsx'
 import { useData } from '../data/DataContext.jsx'
 import { ACHIEVEMENTS } from '../data/achievements.js'
 import { calculateHandicap } from '../utils/handicap.js'
-import { isCountable, isIncomplete } from '../utils/rounds.js'
+import { isCountable, isIncomplete, tracksStats } from '../utils/rounds.js'
 
 export default function Dashboard() {
   const { user } = useAuth()
   const { rounds, earnedIds, loading } = useData()
 
-  // Putting / GIR / OOB aggregates, over rounds that count (excludes par-3
-  // and incomplete rounds, matching the rest of the dashboard).
+  // Putting / GIR / OOB aggregates. Only over rounds that count (excludes
+  // par-3 and incomplete) AND that the user marked as stat-tracked — so
+  // rounds where these weren't recorded don't drag the averages down.
   const stats = useMemo(() => {
-    const countable = rounds.filter(isCountable)
+    const countable = rounds.filter((r) => isCountable(r) && tracksStats(r))
     let playedHoles = 0
     let girHoles = 0
     let obShots = 0

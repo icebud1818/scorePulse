@@ -34,3 +34,19 @@ export function isParThreeCourse(round) {
 export function isCountable(round) {
   return !isIncomplete(round) && !isParThreeCourse(round)
 }
+
+// Whether a round's putts / GIR / OOB should feed the overall detailed stats.
+// New rounds carry an explicit `trackStats` flag set from the form checkbox.
+// Older rounds predate the flag, so we infer it: they're included only if they
+// actually recorded some detailed data (otherwise every untracked hole would
+// wrongly count as a missed green, zero putts, etc.).
+export function tracksStats(round) {
+  if (typeof round?.trackStats === 'boolean') return round.trackStats
+  const holes = Array.isArray(round?.holes) ? round.holes : []
+  return holes.some(
+    (h) =>
+      typeof h.putts === 'number' ||
+      h.gir === true ||
+      (typeof h.ob === 'number' && h.ob > 0)
+  )
+}

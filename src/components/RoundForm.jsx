@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { COURSES, getCourse } from '../data/courses.js'
+import { tracksStats } from '../utils/rounds.js'
 
 const CUSTOM = '__custom__'
 
@@ -38,6 +39,9 @@ export default function RoundForm({
     return makeHolesFor(initialCourseId, 18)
   })
   const [incomplete, setIncomplete] = useState(initialRound?.incomplete === true)
+  const [trackStats, setTrackStats] = useState(() =>
+    initialRound ? tracksStats(initialRound) : false
+  )
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -127,6 +131,7 @@ export default function RoundForm({
       totalScore,
       totalPar,
       incomplete,
+      trackStats,
     }
 
     setBusy(true)
@@ -208,6 +213,30 @@ export default function RoundForm({
             <div className="muted" style={{ fontSize: '0.85rem', marginTop: 6 }}>
               Enter scores only for the holes you played. This round won't count
               toward your handicap or achievements.
+            </div>
+          )}
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              marginTop: 12,
+              marginBottom: 0,
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={trackStats}
+              onChange={(e) => setTrackStats(e.target.checked)}
+              style={{ width: 'auto' }}
+            />
+            <span>Include this round's putts, GIR &amp; OOB in my overall stats</span>
+          </label>
+          {!trackStats && (
+            <div className="muted" style={{ fontSize: '0.85rem', marginTop: 6 }}>
+              Leave unchecked if you didn't track these — the round is still saved,
+              it just won't affect your putting / GIR / OOB averages.
             </div>
           )}
         </div>
