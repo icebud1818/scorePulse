@@ -34,6 +34,19 @@ export default function RoundForm({
   const [customHoleCount, setCustomHoleCount] = useState(
     initialRound?.holes?.length === 9 ? 9 : 18
   )
+  const initialTee = initialRound?.tee || null
+  const [teeId, setTeeId] = useState(
+    () => initialTee?.id || getCourse(initialCourseId)?.tees?.[0]?.id || ''
+  )
+  const [customTeeName, setCustomTeeName] = useState(
+    initialCourseId === CUSTOM ? initialTee?.name || '' : ''
+  )
+  const [customRating, setCustomRating] = useState(
+    initialCourseId === CUSTOM && initialTee?.rating != null ? String(initialTee.rating) : ''
+  )
+  const [customSlope, setCustomSlope] = useState(
+    initialCourseId === CUSTOM && initialTee?.slope != null ? String(initialTee.slope) : ''
+  )
   const [holes, setHoles] = useState(() => {
     if (initialRound?.holes) return initialRound.holes.map(toFormHole)
     return makeHolesFor(initialCourseId, 18)
@@ -55,6 +68,7 @@ export default function RoundForm({
       setHoles(blankHoles(customHoleCount, /*editablePar*/ true))
     } else {
       setHoles(makeHolesFor(nextId, 18))
+      setTeeId(getCourse(nextId)?.tees?.[0]?.id || '')
     }
   }
 
@@ -112,6 +126,38 @@ export default function RoundForm({
       return
     }
 
+    // Resolve the tee played. Preset courses snapshot the selected tee's
+    // ratings; custom courses take them from the form so the handicap can use
+    // them. Ratings are only required when the round would actually count
+    // toward the handicap (a complete, non-scramble round).
+    const countsForHandicap = !incomplete && !scramble
+    let tee = null
+    if (courseId === CUSTOM) {
+      const teeName = customTeeName.trim()
+      const rating = numOrNull(customRating)
+      const slope = numOrNull(customSlope)
+      if (!teeName) {
+        setError('Enter the tee you played from.')
+        return
+      }
+      if (countsForHandicap && (rating == null || slope == null)) {
+        setError('Enter the course rating and slope for this tee so the round counts toward your handicap.')
+        return
+      }
+      if (rating != null && (rating < 50 || rating > 90)) {
+        setError('Course rating should be a number like 71.2.')
+        return
+      }
+      if (slope != null && (slope < 55 || slope > 155)) {
+        setError('Slope rating should be between 55 and 155.')
+        return
+      }
+      tee = { id: null, name: teeName, rating, slope }
+    } else {
+      const t = (preset?.tees || []).find((x) => x.id === teeId)
+      if (t) tee = { id: t.id, name: t.name, rating: t.rating, slope: t.slope }
+    }
+
     // Keep every hole slot (so hole positions line up across rounds), but leave
     // unplayed holes with a null score.
     const cleanedHoles = holes.map((h) => {
@@ -136,6 +182,7 @@ export default function RoundForm({
       scramble,
       trackStats,
     }
+    if (tee) round.tee = tee
     const trimmedNotes = notes.trim()
     if (trimmedNotes) round.notes = trimmedNotes
 
@@ -169,6 +216,19 @@ export default function RoundForm({
                 ))}
               </select>
             </div>
+            {courseId !== CUSTOM && preset?.tees?.length > 0 && (
+              <div>
+                <label>Tee</label>
+                <select value={teeId} onChange={(e) => setTeeId(e.target.value)}>
+                  {preset.tees.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                      {t.rating != null && t.slope != null ? ` — ${t.rating}/${t.slope}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {courseId === CUSTOM && (
               <>
                 <div>
@@ -191,9 +251,49 @@ export default function RoundForm({
                     <option value={18}>18</option>
                   </select>
                 </div>
+                <div>
+                  <label>Tee played</label>
+                  <input
+                    type="text"
+                    value={customTeeName}
+                    onChange={(e) => setCustomTeeName(e.target.value)}
+                    placeholder="e.g. White"
+                    required
+                  />
+                </div>
+                <div>
+                  <label>Course rating</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="50"
+                    max="90"
+                    value={customRating}
+                    onChange={(e) => setCustomRating(e.target.value)}
+                    placeholder="e.g. 71.2"
+                  />
+                </div>
+                <div>
+                  <label>Slope rating</label>
+                  <input
+                    type="number"
+                    min="55"
+                    max="155"
+                    value={customSlope}
+                    onChange={(e) => setCustomSlope(e.target.value)}
+                    placeholder="e.g. 128"
+                  />
+                </div>
               </>
             )}
           </div>
+          {courseId === CUSTOM && (
+            <div className="muted" style={{ fontSize: '0.85rem', marginTop: 10 }}>
+              Course &amp; slope rating come from the scorecard for the tee you
+              played. They let this round count toward your handicap — leave them
+              blank only for a casual round you don't want scored.
+            </div>
+          )}
           <label
             style={{
               display: 'flex',

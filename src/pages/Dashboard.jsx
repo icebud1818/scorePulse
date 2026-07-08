@@ -79,7 +79,7 @@ export default function Dashboard() {
             {handicap == null ? '—' : handicap > 0 ? `+${handicap}` : handicap}
           </div>
           <div className="muted" style={{ fontSize: '0.85rem' }}>
-            {handicap == null ? 'Need 3+ 18-hole rounds' : 'Simplified (score − par)'}
+            {handicap == null ? 'Need 3+ 18-hole rounds' : 'Best differentials, tee-adjusted'}
           </div>
         </div>
         <div className="card">

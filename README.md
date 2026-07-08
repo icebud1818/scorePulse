@@ -85,10 +85,23 @@ Edit `src/data/courses.js`. Each course is:
   id: 'my-course',                // unique, don't rename after use
   name: 'My Home Course',
   pars: [4,4,3,5,4,4,3,4,5,4,3,4,5,4,4,3,4,5],  // 9 or 18 entries
+  tees: [                         // one entry per set of tees
+    { id: 'blue',  name: 'Blue',  rating: 71.2, slope: 128 },
+    { id: 'white', name: 'White', rating: 69.5, slope: 122 },
+    { id: 'red',   name: 'Red',   rating: 68.0, slope: 115 },
+  ],
 }
 ```
 
-Users can also pick "Custom course" in the Add Round form to enter a course ad-hoc without editing code.
+Each tee carries its USGA **course rating** (a decimal like `71.2`) and **slope
+rating** (an integer 55–155; 113 is average), taken from the scorecard. The
+handicap uses these, so put in real values — the ones shipped in `courses.js`
+are placeholders. When logging a round the golfer picks the tee they played,
+and the round stores a snapshot of that tee's ratings.
+
+Users can also pick "Custom course" in the Add Round form to enter a course
+ad-hoc without editing code; they're prompted for the tee name plus its course
+and slope rating so the round can still count toward the handicap.
 
 ## Customizing achievements
 
@@ -127,9 +140,16 @@ Achievements are re-evaluated only on new rounds. If you add new achievements af
 
 ## Handicap
 
-Uses a simplified formula: average of the best ~40% (up to 8) of your last 20 18-hole rounds' (score − par) differentials. Requires at least 3 eligible rounds. This is not the official USGA handicap, but it tracks improvement well for casual play.
+Each round's score differential uses the World Handicap System formula
+`(113 / slope) × (score − course rating)`, taken from the tee played. The
+handicap is the average of the best ~40% (up to 8) of your last 20 18-hole
+rounds' differentials, and requires at least 3 eligible rounds.
 
-To use the real World Handicap System you'd need course rating + slope values per course, which aren't collected here.
+Rounds logged before tees were tracked (and customs entered without ratings)
+fall back to a raw `score − par` differential so they still contribute. The
+best-of selection is a simplification of the official WHS "lowest 8 of 20"
+table, but combined with real course/slope ratings it tracks closely for casual
+play. Incomplete, scramble, and par-3 rounds are excluded.
 
 ## Tech stack
 

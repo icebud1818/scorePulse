@@ -46,6 +46,9 @@ export default function RoundDetail() {
       </h1>
       <div className="muted" style={{ marginBottom: 20 }}>
         {round.date}
+        {round.tee?.name && ` · ${round.tee.name} tees`}
+        {round.tee?.rating != null && round.tee?.slope != null &&
+          ` (${round.tee.rating} / ${round.tee.slope})`}
         {incomplete && ` · ${played} of ${round.holes.length} holes played`}
       </div>
 
