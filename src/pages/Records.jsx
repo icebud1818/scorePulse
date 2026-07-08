@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useData } from '../data/DataContext.jsx'
-import { isScramble } from '../utils/rounds.js'
+import { isParThreeCourse, isScramble } from '../utils/rounds.js'
 
 // Personal Records ("PRs") — bests and career totals across all rounds.
 //
@@ -114,6 +114,21 @@ function fmtVsPar(diff) {
   return diff > 0 ? `+${diff}` : `${diff}`
 }
 
+// Lowest single nine (front or back) across all rounds. Each round contributes
+// up to two candidates; par-3 courses are skipped. Returns { value, round }.
+function pickNine(rounds) {
+  let best = null
+  for (const r of rounds) {
+    if (isParThreeCourse(r)) continue
+    for (const start of [0, 9]) {
+      const v = nineSum(r, start)
+      if (v == null) continue
+      if (best == null || v < best.value) best = { value: v, round: r }
+    }
+  }
+  return best
+}
+
 function computeRecords(allRounds) {
   const rounds = allRounds.filter((r) => !isScramble(r))
 
@@ -132,14 +147,22 @@ function computeRecords(allRounds) {
   const lower = (a, b) => a < b
   const higher = (a, b) => a > b
 
-  const lowest18 = pick((r) => (isFull18(r) ? r.totalScore : null), lower)
+  // Par-3 courses are excluded from full-round / nine / GIR records: their
+  // low scoring and easy greens would swamp everything else.
+  const notPar3 = (r) => !isParThreeCourse(r)
+
+  const lowest18 = pick((r) => (isFull18(r) && notPar3(r) ? r.totalScore : null), lower)
   const bestVsPar = pick((r) => (isFull18(r) ? r.totalScore - r.totalPar : null), lower)
-  const front9 = pick((r) => nineSum(r, 0), lower)
-  const back9 = pick((r) => nineSum(r, 9), lower)
+
+  // Lowest single nine — front OR back, whichever is best, across all rounds.
+  const bestNine = pickNine(rounds)
 
   const mostBirdies = pick((r) => countHoles(r, (s, p) => s === p - 1) || null, higher)
   const mostPars = pick((r) => countHoles(r, (s, p) => s === p) || null, higher)
-  const mostGir = pick((r) => holesOf(r).filter((h) => h.gir === true).length || null, higher)
+  const mostGir = pick(
+    (r) => (notPar3(r) ? holesOf(r).filter((h) => h.gir === true).length || null : null),
+    higher
+  )
 
   const fewestPutts = pick((r) => {
     if (!isFull18(r)) return null
@@ -154,8 +177,7 @@ function computeRecords(allRounds) {
   const roundRecords = [
     rec('lowest-18', 'Lowest 18-hole score', lowest18, (v) => v, <TrophyIcon />, ''),
     rec('best-vs-par', 'Best 18 vs par', bestVsPar, fmtVsPar, <TargetIcon />, ''),
-    rec('front-9', 'Lowest front 9', front9, (v) => v, <FlagIcon />, 'blue'),
-    rec('back-9', 'Lowest back 9', back9, (v) => v, <FlagIcon />, 'blue'),
+    rec('best-nine', 'Lowest 9 (front or back)', bestNine, (v) => v, <FlagIcon />, 'blue'),
     rec('most-birdies', 'Most birdies in a round', mostBirdies, (v) => v, <StarIcon />, ''),
     rec('most-pars', 'Most pars in a round', mostPars, (v) => v, <CircleIcon />, ''),
     rec('fewest-putts', 'Fewest putts in a round', fewestPutts, (v) => v, <CircleIcon />, 'blue'),

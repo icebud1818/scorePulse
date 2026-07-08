@@ -6,7 +6,32 @@
 //     - round: the newly-submitted round { date, courseName, holes: [{ par, score, putts?, ob?, gir? }], totalScore, totalPar }
 //     - allRounds: array of all previously-saved rounds (does NOT include the new one)
 
-import { isCountable } from '../utils/rounds.js'
+import { isCountable, isParThreeCourse } from '../utils/rounds.js'
+import { calculateHandicap } from '../utils/handicap.js'
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+
+// Flagship names for round-count milestones; other tiers fall back to "N Rounds".
+const ROUND_MILESTONE_NAMES = {
+  10: 'Regular',
+  25: 'Committed',
+  50: 'Half Century',
+  100: 'Centurion',
+  200: 'Double Century',
+  250: 'Fairway Veteran',
+}
+
+// Flagship names for course-variety milestones; others fall back to "N Courses".
+const COURSE_MILESTONE_NAMES = {
+  3: 'Getting Around',
+  5: 'Explorer',
+  10: 'Well Traveled',
+  25: 'Course Collector',
+  50: 'Globetrotter',
+}
 
 export const ACHIEVEMENTS = [
   {
@@ -33,8 +58,344 @@ export const ACHIEVEMENTS = [
     description: 'Score one under par on any hole.',
     check: (round) => round.holes.some((h) => h.score != null && h.score === h.par - 1),
   },
-  // Add more here — see README for examples.
+
+  // ---- Single-hole milestones ----
+  {
+    id: 'first-par',
+    name: 'On the Board',
+    description: 'Make a par on any hole.',
+    check: (round) => round.holes.some((h) => h.score != null && h.par != null && h.score === h.par),
+  },
+  {
+    id: 'first-eagle',
+    name: 'Eagle',
+    description: 'Score two under par on any hole.',
+    check: (round) => round.holes.some((h) => h.score != null && h.par != null && h.score === h.par - 2),
+  },
+  {
+    id: 'first-albatross',
+    name: 'Albatross',
+    description: 'Score three under par on any hole.',
+    check: (round) => round.holes.some((h) => h.score != null && h.par != null && h.score === h.par - 3),
+  },
+  {
+    id: 'hole-in-one',
+    name: 'Hole in One',
+    description: 'Ace any hole — one shot, one hole.',
+    check: (round) => round.holes.some((h) => h.score === 1),
+  },
+
+  // ---- Round scoring ----
+  {
+    id: 'break-80',
+    name: 'Breaking 80',
+    description: 'Shoot under 80 on an 18-hole round.',
+    check: (round) => round.holes.length === 18 && round.totalScore < 80,
+  },
+  {
+    id: 'even-par-round',
+    name: 'Level Par',
+    description: 'Shoot even par over an 18-hole round.',
+    check: (round) => round.holes.length === 18 && round.totalScore === round.totalPar,
+  },
+  {
+    id: 'under-par-round',
+    name: 'Red Numbers',
+    description: 'Shoot under par over an 18-hole round.',
+    check: (round) => round.holes.length === 18 && round.totalScore < round.totalPar,
+  },
+
+  // ---- Nine-hole scoring (front or back nine of any round) ----
+  {
+    id: 'break-60-nine',
+    name: 'Nine Under 60',
+    description: 'Score under 60 on a nine.',
+    check: (round) => nines(round).some((n) => n.score < 60),
+  },
+  {
+    id: 'break-50-nine',
+    name: 'Nine Under 50',
+    description: 'Score under 50 on a nine.',
+    check: (round) => nines(round).some((n) => n.score < 50),
+  },
+  {
+    id: 'break-40-nine',
+    name: 'Nine Under 40',
+    description: 'Score under 40 on a nine.',
+    check: (round) => nines(round).some((n) => n.score < 40),
+  },
+  {
+    id: 'break-par-nine',
+    name: 'Nine Under Par',
+    description: 'Shoot under par on a nine.',
+    check: (round) => nines(round).some((n) => n.par > 0 && n.score < n.par),
+  },
+
+  // ---- Stat feats ----
+  {
+    id: 'no-three-putts',
+    name: 'No Three-Putts',
+    description: 'Play a round without more than two putts on any hole.',
+    check: (round) =>
+      round.holes.length > 0 &&
+      round.holes.every((h) => typeof h.putts === 'number' && h.putts <= 2),
+  },
+  {
+    id: 'all-gir',
+    name: 'Perfect Greens',
+    description: 'Hit every green in regulation in a round.',
+    check: (round) => round.holes.length > 0 && round.holes.every((h) => h.gir === true),
+  },
+
+  // ---- Handicap milestones (breaking thresholds toward scratch) ----
+  ...[30, 25, 20, 15].map((n) => ({
+    id: `handicap-under-${n}`,
+    name: `Breaking ${n}`,
+    description: `Reach a handicap below ${n}.`,
+    check: (round, allRounds) => {
+      const h = calculateHandicap([round, ...allRounds])
+      return h != null && h < n
+    },
+  })),
+  {
+    id: 'single-digit-handicap',
+    name: 'Single Digits',
+    description: 'Reach a handicap below 10.',
+    check: (round, allRounds) => {
+      const h = calculateHandicap([round, ...allRounds])
+      return h != null && h < 10
+    },
+  },
+  {
+    id: 'handicap-under-5',
+    name: 'Breaking 5',
+    description: 'Reach a handicap below 5.',
+    check: (round, allRounds) => {
+      const h = calculateHandicap([round, ...allRounds])
+      return h != null && h < 5
+    },
+  },
+  {
+    id: 'scratch-handicap',
+    name: 'Scratch',
+    description: 'Reach a handicap of 0 or better.',
+    check: (round, allRounds) => {
+      const h = calculateHandicap([round, ...allRounds])
+      return h != null && h <= 0
+    },
+  },
+  {
+    id: 'plus-handicap',
+    name: 'Plus Handicap',
+    description: 'Reach a handicap better than scratch (below 0).',
+    check: (round, allRounds) => {
+      const h = calculateHandicap([round, ...allRounds])
+      return h != null && h < 0
+    },
+  },
+
+  // ---- Clean cards ----
+  {
+    id: 'par-nine',
+    name: 'Nine at Par',
+    description: 'Shoot even par on a nine.',
+    check: (round) => nines(round).some((n) => n.par > 0 && n.score === n.par),
+  },
+  {
+    id: 'bogey-or-better-all',
+    name: 'No Doubles',
+    description: 'Make bogey or better on every hole in a round.',
+    check: (round) =>
+      round.holes.length > 0 &&
+      round.holes.every((h) => h.score != null && h.par != null && h.score <= h.par + 1),
+  },
+  {
+    id: 'par-or-better-all',
+    name: 'Bogey-Free Round',
+    description: 'Make par or better on every hole in a round.',
+    check: (round) =>
+      round.holes.length > 0 &&
+      round.holes.every((h) => h.score != null && h.par != null && h.score <= h.par),
+  },
+  {
+    id: 'par-after-oob',
+    name: 'Great Recovery',
+    description: 'Make par or better on a hole after hitting out of bounds.',
+    check: (round) =>
+      round.holes.some(
+        (h) => typeof h.ob === 'number' && h.ob > 0 && h.score != null && h.par != null && h.score <= h.par
+      ),
+  },
+
+  // ---- Participation (count every round, even par-3 / scramble / partial) ----
+  {
+    id: 'play-par-3-course',
+    name: 'Short Game',
+    description: 'Play a round on a par-3 course.',
+    countsAllRounds: true,
+    check: (round) => isParThreeCourse(round),
+  },
+  {
+    id: 'two-rounds-day',
+    name: 'Double Header',
+    description: 'Play two full 18-hole rounds in a single day.',
+    countsAllRounds: true,
+    check: (round, allRounds) =>
+      isComplete18(round) &&
+      allRounds.some((r) => r.date === round.date && isComplete18(r)),
+  },
+  {
+    id: 'seven-rounds-week',
+    name: 'Golf Bender',
+    description: 'Play seven rounds within a seven-day span.',
+    countsAllRounds: true,
+    check: (round, allRounds) => {
+      const cur = parseDay(round.date)
+      if (cur == null) return false
+      const inWindow = allRounds.filter((r) => {
+        const d = parseDay(r.date)
+        return d != null && d <= cur && d > cur - 7
+      }).length
+      return inWindow + 1 >= 7
+    },
+  },
+
+  // ---- Rounds-played milestones (10, then every 25 up to 250) ----
+  ...[10, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250].map((n) => ({
+    id: `rounds-${n}`,
+    name: ROUND_MILESTONE_NAMES[n] || `${n} Rounds`,
+    description: `Log ${n} rounds.`,
+    countsAllRounds: true,
+    check: (round, allRounds) => allRounds.length + 1 >= n,
+  })),
+
+  // ---- Course-variety milestones (3, then every 5 up to 50) ----
+  ...[3, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map((n) => ({
+    id: `courses-${n}`,
+    name: COURSE_MILESTONE_NAMES[n] || `${n} Courses`,
+    description: `Play ${n} different courses.`,
+    countsAllRounds: true,
+    check: (round, allRounds) => distinctCourses([round, ...allRounds]) >= n,
+  })),
+
+  // ---- Seasons ----
+  {
+    id: 'play-spring',
+    name: 'Spring Swing',
+    description: 'Log a round in spring (Mar–May).',
+    countsAllRounds: true,
+    check: (round) => seasonOf(round.date) === 'spring',
+  },
+  {
+    id: 'play-summer',
+    name: 'Summer Rounds',
+    description: 'Log a round in summer (Jun–Aug).',
+    countsAllRounds: true,
+    check: (round) => seasonOf(round.date) === 'summer',
+  },
+  {
+    id: 'play-fall',
+    name: 'Fall Play',
+    description: 'Log a round in fall (Sep–Nov).',
+    countsAllRounds: true,
+    check: (round) => seasonOf(round.date) === 'fall',
+  },
+  {
+    id: 'play-winter',
+    name: 'Winter Warrior',
+    description: 'Log a round in winter (Dec–Feb).',
+    countsAllRounds: true,
+    check: (round) => seasonOf(round.date) === 'winter',
+  },
+  {
+    id: 'all-seasons',
+    name: 'Four Seasons',
+    description: 'Log a round in all four seasons.',
+    countsAllRounds: true,
+    check: (round, allRounds) => {
+      const seasons = new Set([round, ...allRounds].map((r) => seasonOf(r.date)).filter(Boolean))
+      return seasons.size === 4
+    },
+  },
+
+  // ---- Months: one per month, plus a "played every month" capstone ----
+  ...MONTH_NAMES.map((name, i) => ({
+    id: `play-month-${i + 1}`,
+    name: `Played in ${name}`,
+    description: `Log a round in ${name}.`,
+    countsAllRounds: true,
+    check: (round) => monthOf(round.date) === i + 1,
+  })),
+  {
+    id: 'all-months',
+    name: 'Year-Rounder',
+    description: 'Log a round in all twelve months.',
+    countsAllRounds: true,
+    check: (round, allRounds) => {
+      const months = new Set([round, ...allRounds].map((r) => monthOf(r.date)).filter(Boolean))
+      return months.size === 12
+    },
+  },
 ]
+
+// The complete nines within a round (front and/or back), each summed to
+// { score, par }. An 18-hole round yields two; a 9-hole round yields one.
+// Only fully-scored nines are returned. Achievements only ever see countable
+// (complete) rounds, so in practice every nine here is fully played.
+function nines(round) {
+  const holes = Array.isArray(round.holes) ? round.holes : []
+  const out = []
+  for (let start = 0; start + 9 <= holes.length; start += 9) {
+    const slice = holes.slice(start, start + 9)
+    if (!slice.every((h) => typeof h.score === 'number')) continue
+    out.push({
+      score: slice.reduce((s, h) => s + h.score, 0),
+      par: slice.reduce((s, h) => s + (typeof h.par === 'number' ? h.par : 0), 0),
+    })
+  }
+  return out
+}
+
+// Distinct courses across a set of rounds — presets keyed by courseId, custom
+// courses by name (matching how Best Scores groups them).
+function distinctCourses(rounds) {
+  const keys = new Set()
+  for (const r of rounds) {
+    const key = r.courseId ? `id:${r.courseId}` : r.courseName ? `name:${r.courseName}` : null
+    if (key) keys.add(key)
+  }
+  return keys.size
+}
+
+// A round is a complete 18 when all 18 hole slots carry a numeric score.
+function isComplete18(round) {
+  const hs = Array.isArray(round.holes) ? round.holes : []
+  return hs.length === 18 && hs.every((h) => typeof h.score === 'number')
+}
+
+// Month (1–12) of an ISO 'YYYY-MM-DD' date, or null if unparseable.
+function monthOf(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string') return null
+  const m = Number(dateStr.slice(5, 7))
+  return m >= 1 && m <= 12 ? m : null
+}
+
+// Meteorological season of an ISO date (northern hemisphere), or null.
+function seasonOf(dateStr) {
+  const m = monthOf(dateStr)
+  if (!m) return null
+  if (m === 12 || m <= 2) return 'winter'
+  if (m <= 5) return 'spring'
+  if (m <= 8) return 'summer'
+  return 'fall'
+}
+
+// Whole-day number for an ISO date (days since epoch), for windowed counts.
+function parseDay(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string') return null
+  const t = new Date(`${dateStr}T00:00:00`).getTime()
+  return Number.isFinite(t) ? Math.floor(t / 86400000) : null
+}
 
 export function evaluateAchievements(round, allRounds, alreadyEarnedIds) {
   const newlyEarned = []
@@ -58,14 +419,37 @@ export function evaluateAchievements(round, allRounds, alreadyEarnedIds) {
 // the source of truth after any add/edit/delete: an achievement that no
 // longer applies to any round simply won't be in the returned set.
 export function computeEarnedAchievements(allRounds) {
-  // Incomplete, par-3, and scramble rounds don't count toward achievements —
-  // and they're excluded from the replay entirely (via isCountable), so they
-  // also don't advance order-dependent checks like "first round".
-  const sorted = allRounds.filter(isCountable).sort(byChronology)
   const earned = new Set()
+
+  // Two replays, both chronological so order-dependent checks resolve exactly
+  // as they did when rounds were submitted:
+  //   1. Performance achievements see only *countable* rounds — complete,
+  //      non-scramble, non-par-3 — so incomplete/scramble/par-3 rounds can't
+  //      earn a birdie/handicap/etc. or advance "first round".
+  //   2. Participation achievements (flagged `countsAllRounds`) see *every*
+  //      round — being on the course still counts even if it was a par-3
+  //      layout, a scramble, or a partial round.
+  replay(
+    allRounds.filter(isCountable),
+    ACHIEVEMENTS.filter((a) => !a.countsAllRounds),
+    earned
+  )
+  replay(
+    allRounds,
+    ACHIEVEMENTS.filter((a) => a.countsAllRounds),
+    earned
+  )
+
+  return earned
+}
+
+// Replay `rounds` chronologically, adding any `achievements` whose check passes
+// to the shared `earned` set. `prior` grows as we go so order-dependent checks
+// only see rounds that came before.
+function replay(rounds, achievements, earned) {
   const prior = []
-  for (const round of sorted) {
-    for (const ach of ACHIEVEMENTS) {
+  for (const round of [...rounds].sort(byChronology)) {
+    for (const ach of achievements) {
       if (earned.has(ach.id)) continue
       try {
         if (ach.check(round, prior)) earned.add(ach.id)
@@ -75,7 +459,6 @@ export function computeEarnedAchievements(allRounds) {
     }
     prior.push(round)
   }
-  return earned
 }
 
 function byChronology(a, b) {

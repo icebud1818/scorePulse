@@ -28,6 +28,18 @@ export function scoreDifferential(round) {
   return round.totalScore - round.totalPar
 }
 
+// Format a handicap for display using golf convention:
+//   - a normal handicap (over par) is a plain number, e.g. "25.1"
+//   - a "plus" handicap (better than scratch — our value is negative) gets a
+//     leading +, e.g. "+2.4"
+//   - scratch shows as "0.0"
+// Returns '—' when there aren't enough rounds to compute one.
+export function formatHandicap(h) {
+  if (h == null) return '—'
+  if (h < 0) return `+${(-h).toFixed(1)}`
+  return h.toFixed(1)
+}
+
 export function calculateHandicap(rounds) {
   const eligible = rounds
     .filter((r) => !r.incomplete)

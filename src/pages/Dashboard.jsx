@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { useData } from '../data/DataContext.jsx'
 import { ACHIEVEMENTS } from '../data/achievements.js'
-import { calculateHandicap } from '../utils/handicap.js'
+import { calculateHandicap, formatHandicap } from '../utils/handicap.js'
 import { isCountable, isIncomplete, isScramble, tracksStats } from '../utils/rounds.js'
 
 export default function Dashboard() {
@@ -85,7 +85,7 @@ export default function Dashboard() {
             <span className="icon-badge"><PulseIcon /></span>
           </div>
           <div className="stat-value" style={{ color: 'var(--accent)' }}>
-            {handicap == null ? '—' : handicap > 0 ? `+${handicap}` : handicap}
+            {formatHandicap(handicap)}
           </div>
           <div className="stat-sub">
             {handicap == null ? 'Need 3+ 18-hole rounds' : 'Best differentials, tee-adjusted'}
