@@ -6,7 +6,7 @@
 //     - round: the newly-submitted round { date, courseName, holes: [{ par, score, putts?, ob?, gir? }], totalScore, totalPar }
 //     - allRounds: array of all previously-saved rounds (does NOT include the new one)
 
-import { isCountable, isParThreeCourse } from '../utils/rounds.js'
+import { isCountable, isParThreeCourse, isScramble, tracksStats } from '../utils/rounds.js'
 import { calculateHandicap } from '../utils/handicap.js'
 
 const MONTH_NAMES = [
@@ -133,6 +133,12 @@ export const ACHIEVEMENTS = [
 
   // ---- Stat feats ----
   {
+    id: 'up-and-down',
+    name: 'Up and Down',
+    description: 'One-putt a hole.',
+    check: (round) => round.holes.some((h) => h.putts === 1),
+  },
+  {
     id: 'no-three-putts',
     name: 'No Three-Putts',
     description: 'Play a round without more than two putts on any hole.',
@@ -145,6 +151,15 @@ export const ACHIEVEMENTS = [
     name: 'Perfect Greens',
     description: 'Hit every green in regulation in a round.',
     check: (round) => round.holes.length > 0 && round.holes.every((h) => h.gir === true),
+  },
+  {
+    id: 'no-oob-round',
+    name: 'Straight Shooter',
+    description: 'Play a full 18-hole round without hitting out of bounds.',
+    check: (round) =>
+      round.holes.length === 18 &&
+      tracksStats(round) &&
+      round.holes.every((h) => !(typeof h.ob === 'number' && h.ob > 0)),
   },
 
   // ---- Handicap milestones (breaking thresholds toward scratch) ----
@@ -278,6 +293,27 @@ export const ACHIEVEMENTS = [
     check: (round, allRounds) => distinctCourses([round, ...allRounds]) >= n,
   })),
 
+  // ---- Scramble scoring (these only count scramble rounds) ----
+  ...[
+    { id: 'scramble-break-90', name: 'Scramble: Breaking 90', target: 90 },
+    { id: 'scramble-break-80', name: 'Scramble: Breaking 80', target: 80 },
+    { id: 'scramble-break-par', name: 'Scramble: Breaking Par', target: 'par' },
+    { id: 'scramble-break-60', name: 'Scramble: Breaking 60', target: 60 },
+    { id: 'scramble-break-50', name: 'Scramble: Breaking 50', target: 50 },
+  ].map(({ id, name, target }) => ({
+    id,
+    name,
+    description:
+      target === 'par'
+        ? 'Shoot under par in an 18-hole scramble.'
+        : `Shoot under ${target} in an 18-hole scramble.`,
+    countsAllRounds: true,
+    check: (round) => {
+      if (!isScramble(round) || !isComplete18(round)) return false
+      return target === 'par' ? round.totalScore < round.totalPar : round.totalScore < target
+    },
+  })),
+
   // ---- Seasons ----
   {
     id: 'play-spring',
@@ -335,6 +371,74 @@ export const ACHIEVEMENTS = [
       const months = new Set([round, ...allRounds].map((r) => monthOf(r.date)).filter(Boolean))
       return months.size === 12
     },
+  },
+
+  // ---- Manual feats (no data to detect — the user checks these off) ----
+  {
+    id: 'chip-in',
+    name: 'Chip-In',
+    description: 'Hole a chip from off the green.',
+    manual: true,
+  },
+  {
+    id: 'sand-save',
+    name: 'Sand Save',
+    description: 'Get up and down from a greenside bunker.',
+    manual: true,
+  },
+  {
+    id: 'bunker-hole-out',
+    name: 'Bunker Hole-Out',
+    description: 'Hole out directly from a bunker.',
+    manual: true,
+  },
+  {
+    id: 'almost-ace',
+    name: 'Almost Ace',
+    description: 'Land a shot within a foot of the hole.',
+    manual: true,
+  },
+  {
+    id: 'water-skipper',
+    name: 'Water Skipper',
+    description: 'Skip a ball across the water and keep it in play.',
+    manual: true,
+  },
+  {
+    id: 'drive-the-green',
+    name: 'Driving the Green',
+    description: 'Drive the green on a par 4 or 5.',
+    manual: true,
+  },
+  {
+    id: 'long-drive-300',
+    name: '300 Club',
+    description: 'Hit a drive 300+ yards.',
+    manual: true,
+  },
+  {
+    id: 'rain-round',
+    name: 'Rain or Shine',
+    description: 'Play a full round in the rain.',
+    manual: true,
+  },
+  {
+    id: 'dawn-patrol',
+    name: 'Dawn Patrol',
+    description: 'Tee off before 7 a.m.',
+    manual: true,
+  },
+  {
+    id: 'walking-round',
+    name: 'On Foot',
+    description: 'Play a full round walking — no cart.',
+    manual: true,
+  },
+  {
+    id: 'abroad-round',
+    name: 'Passport Stamp',
+    description: 'Play a round in another country.',
+    manual: true,
   },
 ]
 
@@ -431,17 +535,23 @@ export function computeEarnedAchievements(allRounds) {
   //      layout, a scramble, or a partial round.
   replay(
     allRounds.filter(isCountable),
-    ACHIEVEMENTS.filter((a) => !a.countsAllRounds),
+    ACHIEVEMENTS.filter((a) => !a.manual && !a.countsAllRounds),
     earned
   )
   replay(
     allRounds,
-    ACHIEVEMENTS.filter((a) => a.countsAllRounds),
+    ACHIEVEMENTS.filter((a) => !a.manual && a.countsAllRounds),
     earned
   )
 
   return earned
 }
+
+// Achievements the app can't detect from round data — the user marks these
+// done themselves (see Achievements page). They have no `check`.
+export const MANUAL_ACHIEVEMENT_IDS = new Set(
+  ACHIEVEMENTS.filter((a) => a.manual).map((a) => a.id)
+)
 
 // Replay `rounds` chronologically, adding any `achievements` whose check passes
 // to the shared `earned` set. `prior` grows as we go so order-dependent checks

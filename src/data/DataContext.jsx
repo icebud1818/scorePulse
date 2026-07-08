@@ -9,13 +9,17 @@ import {
   deleteRound as deleteRoundFs,
   deleteAchievement as deleteAchievementFs,
 } from '../utils/firestore.js'
-import { ACHIEVEMENTS, computeEarnedAchievements } from './achievements.js'
+import { ACHIEVEMENTS, MANUAL_ACHIEVEMENT_IDS, computeEarnedAchievements } from './achievements.js'
 
 const DataContext = createContext(null)
 
-// Only achievements defined in the app are ever added or removed here, so a
-// definition that's been deleted from the code never nukes a stored doc.
-const KNOWN_IDS = new Set(ACHIEVEMENTS.map((a) => a.id))
+// Auto-reconciliation only ever adds/removes *auto* achievements (ones with a
+// check). Manual achievements the user toggles themselves are never in this
+// set, so the recompute can't wipe them — and a definition deleted from the
+// code never nukes a stored doc either.
+const AUTO_IDS = new Set(
+  ACHIEVEMENTS.filter((a) => !MANUAL_ACHIEVEMENT_IDS.has(a.id)).map((a) => a.id)
+)
 
 export function DataProvider({ children }) {
   const { user } = useAuth()
@@ -33,7 +37,7 @@ export function DataProvider({ children }) {
       const computed = computeEarnedAchievements(nextRounds)
       const prior = new Set(priorEarnedIds)
       const toAdd = [...computed].filter((id) => !prior.has(id))
-      const toRemove = [...prior].filter((id) => KNOWN_IDS.has(id) && !computed.has(id))
+      const toRemove = [...prior].filter((id) => AUTO_IDS.has(id) && !computed.has(id))
 
       await Promise.all([
         ...toAdd.map((id) => recordAchievement(user.uid, id)),
@@ -121,6 +125,23 @@ export function DataProvider({ children }) {
 
   const clearLastEarned = useCallback(() => setLastEarned([]), [])
 
+  // Toggle a manually-tracked achievement (e.g. "Chip-In"). Writes/removes the
+  // Firestore doc directly and updates local state; the auto-reconciliation
+  // leaves these alone, so they persist.
+  const setManualAchievement = useCallback(
+    async (id, earned) => {
+      if (!user) return
+      // Optimistic local update, then persist.
+      setEarnedIds((prev) => {
+        if (earned) return prev.includes(id) ? prev : [...prev, id]
+        return prev.filter((x) => x !== id)
+      })
+      if (earned) await recordAchievement(user.uid, id)
+      else await deleteAchievementFs(user.uid, id)
+    },
+    [user]
+  )
+
   return (
     <DataContext.Provider
       value={{
@@ -130,6 +151,7 @@ export function DataProvider({ children }) {
         addRound,
         editRound,
         removeRound,
+        setManualAchievement,
         lastEarned,
         clearLastEarned,
         reload,
