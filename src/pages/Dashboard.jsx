@@ -20,6 +20,7 @@ export default function Dashboard() {
     let obShots = 0
     let puttRounds = 0
     let puttTotal = 0
+    let puttHoles = 0
 
     for (const r of countable) {
       const holes = Array.isArray(r.holes) ? r.holes : []
@@ -34,11 +35,13 @@ export default function Dashboard() {
       if (played.length > 0 && played.every((h) => typeof h.putts === 'number')) {
         puttRounds++
         puttTotal += played.reduce((s, h) => s + h.putts, 0)
+        puttHoles += played.length
       }
     }
 
     return {
       puttsPerRound: puttRounds ? puttTotal / puttRounds : null,
+      puttsPerHole: puttHoles ? puttTotal / puttHoles : null,
       puttRounds,
       girPct: playedHoles ? (girHoles / playedHoles) * 100 : null,
       girHoles,
@@ -56,10 +59,14 @@ export default function Dashboard() {
   const eighteenHoleRounds = rounds.filter(
     (r) => r.holes?.length === 18 && isCountable(r)
   )
-  const bestScore = eighteenHoleRounds.length
-    ? Math.min(...eighteenHoleRounds.map((r) => r.totalScore))
+  const bestRound = eighteenHoleRounds.length
+    ? eighteenHoleRounds.reduce((best, r) => (r.totalScore < best.totalScore ? r : best))
     : null
-  const lastRound = rounds[0]
+  const bestScore = bestRound ? bestRound.totalScore : null
+  // Most-recently-*played* round (latest date), not the last one entered.
+  const lastRound = rounds.length
+    ? [...rounds].sort((a, b) => (b.date || '').localeCompare(a.date || ''))[0]
+    : null
 
   return (
     <div className="container">
@@ -82,6 +89,11 @@ export default function Dashboard() {
         <div className="card">
           <div className="muted">Best 18-hole score</div>
           <div style={{ fontSize: '2rem', fontWeight: 700 }}>{bestScore ?? '—'}</div>
+          {bestRound && (
+            <div className="muted" style={{ fontSize: '0.85rem' }}>
+              at {bestRound.courseName}
+            </div>
+          )}
         </div>
       </div>
 
@@ -92,6 +104,11 @@ export default function Dashboard() {
           <div style={{ fontSize: '2rem', fontWeight: 700 }}>
             {stats.puttsPerRound == null ? '—' : stats.puttsPerRound.toFixed(1)}
           </div>
+          {stats.puttsPerHole != null && (
+            <div style={{ fontWeight: 600 }}>
+              {stats.puttsPerHole.toFixed(2)} <span className="muted" style={{ fontWeight: 400 }}>per hole</span>
+            </div>
+          )}
           <div className="muted" style={{ fontSize: '0.85rem' }}>
             {stats.puttRounds
               ? `over ${stats.puttRounds} fully-tracked round${stats.puttRounds === 1 ? '' : 's'}`

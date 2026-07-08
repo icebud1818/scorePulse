@@ -1,21 +1,6 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useData } from '../data/DataContext.jsx'
-import { holesPlayed, isIncomplete, isParThreeCourse } from '../utils/rounds.js'
-
-// Color a hole's score by its strokes vs. par (diff = score - par):
-//   birdie or better  → brightest green
-//   par               → green
-//   bogey             → yellow-green
-//   double bogey → +4 → scale yellow → orange → red
-//   +5 or worse       → straight red
-function scoreColor(diff) {
-  if (diff <= -1) return 'hsl(150, 90%, 58%)'
-  if (diff === 0) return 'hsl(140, 68%, 50%)'
-  if (diff === 1) return 'hsl(90, 62%, 52%)'
-  const t = Math.min((diff - 2) / 3, 1) // 0 at double bogey, 1 at +5 and beyond
-  const hue = 55 - 55 * t // 55° yellow → 0° red
-  return `hsl(${hue}, 82%, 55%)`
-}
+import { holesPlayed, isIncomplete, isParThreeCourse, scoreColor } from '../utils/rounds.js'
 
 export default function RoundDetail() {
   const { id } = useParams()

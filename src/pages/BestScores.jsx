@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useData } from '../data/DataContext.jsx'
+import { scoreColor } from '../utils/rounds.js'
 
 export default function BestScores() {
   const { rounds, loading } = useData()
@@ -73,10 +74,7 @@ export default function BestScores() {
                       <th style={{ textAlign: 'left' }}>Best</th>
                       {c.bestPerHole.map((h, i) => {
                         const diff = h.best != null && h.par != null ? h.best - h.par : null
-                        const color = diff == null ? 'var(--muted)'
-                          : diff < 0 ? 'var(--accent)'
-                          : diff === 0 ? 'var(--text)'
-                          : 'var(--warn)'
+                        const color = diff == null ? 'var(--muted)' : scoreColor(diff)
                         return <td key={i} style={{ color, fontWeight: 600 }}>{h.best ?? '—'}</td>
                       })}
                       <td><strong>{totalBest}</strong></td>

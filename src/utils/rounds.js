@@ -1,5 +1,20 @@
 import { getCourse } from '../data/courses.js'
 
+// Color a hole's score by its strokes vs. par (diff = score - par):
+//   birdie or better  → brightest green
+//   par               → green
+//   bogey             → yellow-green
+//   double bogey → +4 → scale yellow → orange → red
+//   +5 or worse       → straight red
+export function scoreColor(diff) {
+  if (diff <= -1) return 'hsl(150, 90%, 58%)'
+  if (diff === 0) return 'hsl(140, 68%, 50%)'
+  if (diff === 1) return 'hsl(90, 62%, 52%)'
+  const t = Math.min((diff - 2) / 3, 1) // 0 at double bogey, 1 at +5 and beyond
+  const hue = 55 - 55 * t // 55° yellow → 0° red
+  return `hsl(${hue}, 82%, 55%)`
+}
+
 // Helpers for reasoning about complete vs. partial (incomplete) rounds.
 //
 // A round is "incomplete" when the golfer didn't finish what they set out to
