@@ -13,6 +13,7 @@ import EditRound from './pages/EditRound.jsx'
 import RoundsList from './pages/RoundsList.jsx'
 import RoundDetail from './pages/RoundDetail.jsx'
 import BestScores from './pages/BestScores.jsx'
+import Records from './pages/Records.jsx'
 import Achievements from './pages/Achievements.jsx'
 
 // Only wrap logged-in routes with DataProvider so we don't hit Firestore
@@ -40,6 +41,7 @@ function AppRoutes() {
         <Route path="/rounds/:id" element={wrapProtected(<RoundDetail />)} />
         <Route path="/rounds/:id/edit" element={wrapProtected(<EditRound />)} />
         <Route path="/best" element={wrapProtected(<BestScores />)} />
+        <Route path="/records" element={wrapProtected(<Records />)} />
         <Route path="/achievements" element={wrapProtected(<Achievements />)} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
