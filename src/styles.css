@@ -354,6 +354,35 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
   background: rgba(74, 222, 128, 0.1);
   border: 1px solid rgba(74, 222, 128, 0.22);
 }
+/* Colored icon-badge variants. */
+.icon-badge.blue { color: #38bdf8; background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.22); }
+.icon-badge.amber { color: #fbbf24; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.22); }
+.icon-badge.purple { color: #a78bfa; background: rgba(167, 139, 250, 0.12); border-color: rgba(167, 139, 250, 0.25); }
+.icon-badge.pink { color: #fb7185; background: rgba(251, 113, 133, 0.12); border-color: rgba(251, 113, 133, 0.25); }
+
+/* Stat tile with a colored left accent stripe (Records career totals). */
+.stat-tile { position: relative; overflow: hidden; }
+.stat-tile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--tile-accent, var(--border));
+}
+
+/* Colored score-vs-par chip (rounds list, etc.). */
+.diff-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.diff-chip.under { color: var(--accent); background: rgba(74, 222, 128, 0.12); }
+.diff-chip.even { color: var(--text); background: var(--panel-2); }
+.diff-chip.over { color: var(--warn); background: rgba(251, 191, 36, 0.12); }
 
 /* Featured card — used for the headline handicap stat. */
 .card.featured {

@@ -35,9 +35,11 @@ export default function Records() {
           <h2>Career totals</h2>
           <div className="grid cols-3">
             {records.totals.map((t) => (
-              <div className="card" key={t.id}>
+              <div className="card stat-tile" key={t.id} style={{ '--tile-accent': t.accent }}>
                 <div className="stat-label">{t.label}</div>
-                <div className="stat-value">{t.value}</div>
+                <div className="stat-value" style={t.color ? { color: t.color } : undefined}>
+                  {t.value}
+                </div>
               </div>
             ))}
           </div>
@@ -48,10 +50,13 @@ export default function Records() {
 }
 
 function RecordCard({ record }) {
-  const { label, display, round } = record
+  const { label, display, round, icon, badge } = record
   return (
     <div className="card">
-      <div className="stat-label">{label}</div>
+      <div className="stat-head">
+        <span className="stat-label">{label}</span>
+        <span className={`icon-badge ${badge || ''}`}>{icon}</span>
+      </div>
       <div className="stat-value">{display ?? '—'}</div>
       {round ? (
         <div className="stat-sub">
@@ -147,16 +152,16 @@ function computeRecords(allRounds) {
   const birdieStreak = pick((r) => longestStreak(r, (s, p) => s <= p - 1) || null, higher)
 
   const roundRecords = [
-    rec('lowest-18', 'Lowest 18-hole score', lowest18, (v) => v),
-    rec('best-vs-par', 'Best 18 vs par', bestVsPar, fmtVsPar),
-    rec('front-9', 'Lowest front 9', front9, (v) => v),
-    rec('back-9', 'Lowest back 9', back9, (v) => v),
-    rec('most-birdies', 'Most birdies in a round', mostBirdies, (v) => v),
-    rec('most-pars', 'Most pars in a round', mostPars, (v) => v),
-    rec('fewest-putts', 'Fewest putts in a round', fewestPutts, (v) => v),
-    rec('most-gir', 'Most greens in regulation', mostGir, (v) => v),
-    rec('par-streak', 'Longest par-or-better streak', parStreak, (v) => v),
-    rec('birdie-streak', 'Longest birdie-or-better streak', birdieStreak, (v) => v),
+    rec('lowest-18', 'Lowest 18-hole score', lowest18, (v) => v, <TrophyIcon />, ''),
+    rec('best-vs-par', 'Best 18 vs par', bestVsPar, fmtVsPar, <TargetIcon />, ''),
+    rec('front-9', 'Lowest front 9', front9, (v) => v, <FlagIcon />, 'blue'),
+    rec('back-9', 'Lowest back 9', back9, (v) => v, <FlagIcon />, 'blue'),
+    rec('most-birdies', 'Most birdies in a round', mostBirdies, (v) => v, <StarIcon />, ''),
+    rec('most-pars', 'Most pars in a round', mostPars, (v) => v, <CircleIcon />, ''),
+    rec('fewest-putts', 'Fewest putts in a round', fewestPutts, (v) => v, <CircleIcon />, 'blue'),
+    rec('most-gir', 'Most greens in regulation', mostGir, (v) => v, <TargetIcon />, 'blue'),
+    rec('par-streak', 'Longest par-or-better streak', parStreak, (v) => v, <FlameIcon />, 'amber'),
+    rec('birdie-streak', 'Longest birdie-or-better streak', birdieStreak, (v) => v, <FlameIcon />, 'amber'),
   ]
 
   // Career totals across every non-scramble round (incomplete included).
@@ -176,24 +181,75 @@ function computeRecords(allRounds) {
   }
 
   const totals = [
-    { id: 'rounds', label: 'Rounds logged', value: rounds.length },
-    { id: 'holes', label: 'Holes played', value: holesPlayed },
-    { id: 'pars', label: 'Total pars', value: pars },
-    { id: 'birdies', label: 'Total birdies', value: birdies },
-    { id: 'eagles', label: 'Total eagles', value: eagles },
-    { id: 'albatrosses', label: 'Total albatrosses', value: albatrosses },
-    { id: 'aces', label: 'Total hole-in-ones', value: aces },
+    { id: 'rounds', label: 'Rounds logged', value: rounds.length, accent: 'var(--border)' },
+    { id: 'holes', label: 'Holes played', value: holesPlayed, accent: 'var(--border)' },
+    { id: 'pars', label: 'Total pars', value: pars, accent: '#4ade80', color: '#4ade80' },
+    { id: 'birdies', label: 'Total birdies', value: birdies, accent: '#38bdf8', color: '#38bdf8' },
+    { id: 'eagles', label: 'Total eagles', value: eagles, accent: '#fbbf24', color: '#fbbf24' },
+    { id: 'albatrosses', label: 'Total albatrosses', value: albatrosses, accent: '#a78bfa', color: '#a78bfa' },
+    { id: 'aces', label: 'Total hole-in-ones', value: aces, accent: '#fb7185', color: '#fb7185' },
   ]
 
   return { roundCount: rounds.length, roundRecords, totals }
 }
 
 // Build a round-record entry for display. `best` is { value, round } or null.
-function rec(id, label, best, format) {
+function rec(id, label, best, format, icon, badge) {
   return {
     id,
     label,
     display: best ? format(best.value) : null,
     round: best ? best.round : null,
+    icon,
+    badge,
   }
+}
+
+// Inline stroke icons (no dependencies) — shared visual language with the app.
+function TrophyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 4h12v4a6 6 0 0 1-12 0V4Z" />
+      <path d="M6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3" />
+      <path d="M9 20h6M12 14v6" />
+    </svg>
+  )
+}
+function TargetIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1" />
+    </svg>
+  )
+}
+function FlagIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 22V4" />
+      <path d="M4 4h11l-1.5 3L15 10H4" />
+    </svg>
+  )
+}
+function CircleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="8" />
+    </svg>
+  )
+}
+function StarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 18.8 6.7 19.2l1-5.8L3.5 9.2l5.9-.9L12 3Z" />
+    </svg>
+  )
+}
+function FlameIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3c1 3-1.5 4.5-1.5 7A3.5 3.5 0 0 0 14 13c0-1.5-1-2.5-.5-4 2 1 4 3.5 4 7a5.5 5.5 0 1 1-11 0c0-4 4-6 5.5-13Z" />
+    </svg>
+  )
 }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useData } from '../data/DataContext.jsx'
 import { holesPlayed, isIncomplete, isParThreeCourse, isScramble } from '../utils/rounds.js'
 
@@ -26,6 +26,7 @@ const DEFAULT_DESC = {
 
 export default function RoundsList() {
   const { rounds, loading } = useData()
+  const nav = useNavigate()
   const [sortKey, setSortKey] = useState('date')
   const [desc, setDesc] = useState(true)
 
@@ -52,10 +53,10 @@ export default function RoundsList() {
 
   if (loading) return <div className="container center muted">Loading…</div>
 
-  const Th = ({ column, children }) => (
+  const Th = ({ column, children, style }) => (
     <th
       onClick={() => changeSort(column)}
-      style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+      style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', ...style }}
     >
       {children}
       {sortKey === column && <span style={{ marginLeft: 4 }}>{desc ? '▼' : '▲'}</span>}
@@ -69,53 +70,84 @@ export default function RoundsList() {
         <div className="spacer" />
         <Link to="/add"><button className="primary">+ Add round</button></Link>
       </div>
+      <p className="subtitle" style={{ margin: '10px 0 20px' }}>
+        {sorted.length
+          ? `${sorted.length} round${sorted.length === 1 ? '' : 's'} logged`
+          : 'Your logged rounds will appear here'}
+      </p>
 
       {sorted.length === 0 ? (
         <div className="card center muted">
           No rounds yet. <Link to="/add">Log your first one</Link>.
         </div>
       ) : (
-        <div className="card" style={{ padding: 0 }}>
-          <table>
-            <thead>
-              <tr>
-                <Th column="date">Date</Th>
-                <Th column="course">Course</Th>
-                <Th column="holes">Holes</Th>
-                <Th column="score">Score</Th>
-                <Th column="par">Par</Th>
-                <Th column="diff">Diff</Th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((r) => {
-                const diff = r.totalScore - r.totalPar
-                const incomplete = isIncomplete(r)
-                const total = r.holes?.length ?? 0
-                return (
-                  <tr key={r.id}>
-                    <td>{r.date}</td>
-                    <td>
-                      {r.courseName}
-                      {isParThreeCourse(r) && <span className="tag" style={{ marginLeft: 8 }}>Par 3</span>}
-                      {incomplete && <span className="tag incomplete" style={{ marginLeft: 8 }}>Incomplete</span>}
-                      {isScramble(r) && <span className="tag scramble" style={{ marginLeft: 8 }}>Scramble</span>}
-                    </td>
-                    <td>{incomplete ? `${holesPlayed(r)}/${total}` : total || '—'}</td>
-                    <td><strong>{r.totalScore}</strong></td>
-                    <td className="muted">{r.totalPar}</td>
-                    <td style={{ color: diff <= 0 ? 'var(--accent)' : diff <= 5 ? 'var(--text)' : 'var(--warn)' }}>
-                      {diff > 0 ? `+${diff}` : diff}
-                    </td>
-                    <td><Link to={`/rounds/${r.id}`}>View</Link></td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="rounds-table">
+              <thead>
+                <tr>
+                  <Th column="date">Date</Th>
+                  <Th column="course">Course</Th>
+                  <Th column="holes" style={{ textAlign: 'center' }}>Holes</Th>
+                  <Th column="score" style={{ textAlign: 'center' }}>Score</Th>
+                  <Th column="par" style={{ textAlign: 'center' }}>Par</Th>
+                  <Th column="diff" style={{ textAlign: 'center' }}>Diff</Th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((r) => {
+                  const diff = r.totalScore - r.totalPar
+                  const incomplete = isIncomplete(r)
+                  const total = r.holes?.length ?? 0
+                  const chip = diffClass(diff)
+                  return (
+                    <tr
+                      key={r.id}
+                      onClick={() => nav(`/rounds/${r.id}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <td style={{ whiteSpace: 'nowrap' }}>{r.date}</td>
+                      <td>
+                        <div className="row" style={{ gap: 8 }}>
+                          <span style={{ fontWeight: 600 }}>{r.courseName}</span>
+                          {isParThreeCourse(r) && <span className="tag">Par 3</span>}
+                          {incomplete && <span className="tag incomplete">Incomplete</span>}
+                          {isScramble(r) && <span className="tag scramble">Scramble</span>}
+                        </div>
+                        {r.tee?.name && (
+                          <div className="muted" style={{ fontSize: '0.8rem', marginTop: 2 }}>
+                            {r.tee.name} tees
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        {incomplete ? `${holesPlayed(r)}/${total}` : total || '—'}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <strong>{r.totalScore}</strong>
+                      </td>
+                      <td className="muted" style={{ textAlign: 'center' }}>{r.totalPar}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span className={`diff-chip ${chip}`}>
+                          {diff > 0 ? `+${diff}` : diff === 0 ? 'E' : diff}
+                        </span>
+                      </td>
+                      <td className="muted" style={{ textAlign: 'right', paddingRight: 16 }}>›</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
   )
+}
+
+function diffClass(diff) {
+  if (diff <= 0) return 'under'
+  if (diff <= 5) return 'even'
+  return 'over'
 }
