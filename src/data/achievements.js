@@ -501,19 +501,25 @@ export const ACHIEVEMENTS = [
 // one of these via categoryOf(). `manual` is last so the "log it yourself"
 // feats sit at the bottom of the page.
 export const ACHIEVEMENT_CATEGORIES = [
-  { id: 'getting-started', label: 'Getting Started' },
-  { id: 'scoring', label: 'Scoring' },
-  { id: 'hole-feats', label: 'Hole Feats' },
-  { id: 'streaks', label: 'Streaks & Runs' },
-  { id: 'consistency', label: 'Consistency' },
-  { id: 'handicap', label: 'Handicap' },
-  { id: 'milestones', label: 'Milestones' },
-  { id: 'variety', label: 'Variety' },
-  { id: 'scramble', label: 'Scramble' },
-  { id: 'seasons', label: 'Seasons' },
-  { id: 'months', label: 'Months' },
-  { id: 'manual', label: 'Log It Yourself' },
+  { id: 'getting-started', label: 'Getting Started', color: '74,222,128' },
+  { id: 'scoring', label: 'Scoring', color: '56,189,248' },
+  { id: 'hole-feats', label: 'Hole Feats', color: '250,204,21' },
+  { id: 'streaks', label: 'Streaks & Runs', color: '251,146,60' },
+  { id: 'consistency', label: 'Consistency', color: '45,212,191' },
+  { id: 'handicap', label: 'Handicap', color: '167,139,250' },
+  { id: 'milestones', label: 'Milestones', color: '251,191,36' },
+  { id: 'variety', label: 'Variety', color: '244,114,182' },
+  { id: 'scramble', label: 'Scramble', color: '129,140,248' },
+  { id: 'seasons', label: 'Seasons', color: '52,211,153' },
+  { id: 'months', label: 'Months', color: '96,165,250' },
+  { id: 'manual', label: 'Log It Yourself', color: '148,163,184' },
 ]
+
+// Category color lookup (r,g,b string) for tinting badges, etc.
+export function categoryColor(catId) {
+  const c = ACHIEVEMENT_CATEGORIES.find((x) => x.id === catId)
+  return c ? c.color : '148,163,184'
+}
 
 const HOLE_FEAT_IDS = new Set(['first-par', 'first-birdie', 'first-eagle', 'first-albatross', 'hole-in-one'])
 const STREAK_IDS = new Set(['birdie-barrage', 'turkey', 'par-train', 'wall-of-pars', 'fore-right', 'tin-cup'])
@@ -545,6 +551,124 @@ export function categoryOf(ach) {
   if (id.startsWith('rounds-') || id.startsWith('courses-')) return 'milestones'
   if (HANDICAP_IDS.has(id) || id.startsWith('handicap-under-')) return 'handicap'
   return 'scoring'
+}
+
+// Emoji badge per achievement. Anything not listed falls back to a per-pattern
+// or per-category default in iconForAchievement().
+const ACHIEVEMENT_EMOJI = {
+  'first-round': '🏌️',
+
+  // Scoring (18-hole + nine)
+  'break-100': '💯',
+  'break-90': '🎯',
+  'break-80': '🥇',
+  'even-par-round': '⚖️',
+  'under-par-round': '🔴',
+  'break-60-nine': '🌡️',
+  'break-50-nine': '♨️',
+  'break-40-nine': '🌶️',
+  'break-par-nine': '🔥',
+  'par-nine': '9️⃣',
+
+  // Hole feats
+  'first-par': '👍',
+  'first-birdie': '🐦',
+  'first-eagle': '🦅',
+  'first-albatross': '🕊️',
+  'hole-in-one': '🕳️',
+
+  // Streaks & runs
+  'birdie-barrage': '🐦',
+  'turkey': '🦃',
+  'par-train': '🚂',
+  'wall-of-pars': '🧱',
+  'fore-right': '⛔',
+  'tin-cup': '🥫',
+
+  // Consistency
+  'up-and-down': '👌',
+  'no-three-putts': '🟢',
+  'all-gir': '🟩',
+  'no-oob-round': '➡️',
+  'bogey-or-better-all': '🚫',
+  'par-or-better-all': '✨',
+  'par-after-oob': '💪',
+
+  // Handicap
+  'handicap-under-30': '📉',
+  'handicap-under-25': '🏌️',
+  'handicap-under-20': '⚔️',
+  'handicap-under-15': '🥊',
+  'single-digit-handicap': '🔟',
+  'handicap-under-5': '💎',
+  'scratch-handicap': '0️⃣',
+  'plus-handicap': '🌟',
+
+  // Variety
+  'play-par-3-course': '⛳',
+  'two-rounds-day': '🔁',
+  'seven-rounds-week': '🥴',
+
+  // Seasons
+  'play-spring': '🌸',
+  'play-summer': '☀️',
+  'play-fall': '🍂',
+  'play-winter': '❄️',
+  'all-seasons': '🌍',
+
+  // Months
+  'play-month-1': '⛄',
+  'play-month-2': '💝',
+  'play-month-3': '🌱',
+  'play-month-4': '🌧️',
+  'play-month-5': '🌷',
+  'play-month-6': '😎',
+  'play-month-7': '🎆',
+  'play-month-8': '🏖️',
+  'play-month-9': '🍁',
+  'play-month-10': '🎃',
+  'play-month-11': '🍽️',
+  'play-month-12': '🎄',
+  'all-months': '📅',
+
+  // Manual
+  'chip-in': '🥏',
+  'sand-save': '🏖️',
+  'bunker-hole-out': '💥',
+  'almost-ace': '😬',
+  'water-skipper': '🌊',
+  'drive-the-green': '🟩',
+  'long-drive-300': '🚀',
+  'rain-round': '🌧️',
+  'dawn-patrol': '🌅',
+  'walking-round': '🚶',
+  'abroad-round': '✈️',
+}
+
+const CATEGORY_EMOJI = {
+  'getting-started': '🏌️',
+  'scoring': '⛳',
+  'hole-feats': '⛳',
+  'streaks': '🔥',
+  'consistency': '✅',
+  'handicap': '📉',
+  'milestones': '🏆',
+  'variety': '🎲',
+  'scramble': '🤝',
+  'seasons': '📅',
+  'months': '📅',
+  'manual': '📝',
+}
+
+// The emoji badge for an achievement: explicit map first, then patterns for the
+// generated tiers, then the category default.
+export function iconForAchievement(ach) {
+  const id = ach.id
+  if (ACHIEVEMENT_EMOJI[id]) return ACHIEVEMENT_EMOJI[id]
+  if (id.startsWith('rounds-')) return '🏌️'
+  if (id.startsWith('courses-')) return '🗺️'
+  if (id.startsWith('scramble-')) return '🤝'
+  return CATEGORY_EMOJI[categoryOf(ach)] || '⛳'
 }
 
 // Per-hole predicates for streak/count achievements.

@@ -1,4 +1,4 @@
-import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES, categoryOf } from '../data/achievements.js'
+import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES, categoryOf, iconForAchievement } from '../data/achievements.js'
 import { useData } from '../data/DataContext.jsx'
 
 export default function Achievements() {
@@ -57,7 +57,15 @@ export default function Achievements() {
                       key={a.id}
                       style={{ cursor: 'pointer' }}
                     >
-                      <div className="badge">{earned ? '★' : '○'}</div>
+                      <div
+                        className="badge"
+                        style={earned ? {
+                          background: `rgba(${cat.color},0.16)`,
+                          border: `1px solid rgba(${cat.color},0.4)`,
+                        } : undefined}
+                      >
+                        {iconForAchievement(a)}
+                      </div>
                       <div style={{ flex: 1 }}>
                         <div className="title">{a.name}</div>
                         <div className="desc">{a.description}</div>
@@ -73,7 +81,15 @@ export default function Achievements() {
                 }
                 return (
                   <div className={`achievement ${earned ? '' : 'locked'}`} key={a.id}>
-                    <div className="badge">{earned ? '★' : '?'}</div>
+                    <div
+                      className="badge"
+                      style={earned ? {
+                        background: `rgba(${cat.color},0.16)`,
+                        border: `1px solid rgba(${cat.color},0.4)`,
+                      } : undefined}
+                    >
+                      {iconForAchievement(a)}
+                    </div>
                     <div>
                       <div className="title">{a.name}</div>
                       <div className="desc">{a.description}</div>
