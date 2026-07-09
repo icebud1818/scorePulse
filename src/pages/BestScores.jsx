@@ -224,22 +224,34 @@ function computeCourse(course, allRounds) {
       detail: playCount ? `${playCount} round${playCount === 1 ? '' : 's'} played` : 'Not played yet',
     },
     {
+      id: 'played-3',
+      label: 'Play 3 rounds',
+      done: playCount >= 3,
+      detail: `${Math.min(playCount, 3)} of 3 rounds`,
+    },
+    {
+      id: 'played-5',
+      label: 'Play 5 rounds',
+      done: playCount >= 5,
+      detail: `${Math.min(playCount, 5)} of 5 rounds`,
+    },
+    {
       id: 'par-one',
       label: 'Make a par',
       done: parredCount >= 1,
       detail: parredCount ? 'Parred a hole (or better)' : 'No pars yet',
     },
     {
-      id: 'par-all',
-      label: 'Par or better on every hole',
-      done: holeCount > 0 && parredCount >= holeCount,
-      detail: `${Math.min(parredCount, holeCount)} of ${holeCount} holes parred`,
-    },
-    {
       id: 'birdie',
       label: 'Make a birdie',
       done: hasBirdie,
       detail: hasBirdie ? 'Carded a birdie (or better)' : 'No birdies yet',
+    },
+    {
+      id: 'par-all',
+      label: 'Par or better on every hole',
+      done: holeCount > 0 && parredCount >= holeCount,
+      detail: `${Math.min(parredCount, holeCount)} of ${holeCount} holes parred`,
     },
     ...(course.par3
       ? []
@@ -260,18 +272,6 @@ function computeCourse(course, allRounds) {
         bestFull != null
           ? `Best full round: ${bestFull}`
           : 'No complete rounds yet',
-    },
-    {
-      id: 'played-3',
-      label: 'Play 3 rounds',
-      done: playCount >= 3,
-      detail: `${Math.min(playCount, 3)} of 3 rounds`,
-    },
-    {
-      id: 'played-5',
-      label: 'Play 5 rounds',
-      done: playCount >= 5,
-      detail: `${Math.min(playCount, 5)} of 5 rounds`,
     },
   ]
 

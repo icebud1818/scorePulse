@@ -19,8 +19,13 @@ const ROUND_MILESTONE_NAMES = {
   10: 'Getting Hooked',
   25: 'Dedicated',
   50: 'Half Century',
+  75: 'Seasoned',
   100: 'Centurion',
+  125: 'Devoted',
+  150: 'Die-Hard',
+  175: 'Golf Junkie',
   200: 'Double Century',
+  225: 'Living Legend',
   250: 'Ironman',
 }
 
@@ -345,11 +350,11 @@ export const ACHIEVEMENTS = [
 
   // ---- Scramble scoring (these only count scramble rounds) ----
   ...[
-    { id: 'scramble-break-90', name: 'Scramble: Breaking 90', target: 90 },
-    { id: 'scramble-break-80', name: 'Scramble: Breaking 80', target: 80 },
-    { id: 'scramble-break-par', name: 'Scramble: Breaking Par', target: 'par' },
-    { id: 'scramble-break-60', name: 'Scramble: Breaking 60', target: 60 },
-    { id: 'scramble-break-50', name: 'Scramble: Breaking 50', target: 50 },
+    { id: 'scramble-break-90', name: 'Team Effort', target: 90 },
+    { id: 'scramble-break-80', name: 'In Sync', target: 80 },
+    { id: 'scramble-break-par', name: 'Dream Team', target: 'par' },
+    { id: 'scramble-break-60', name: 'Well-Oiled Machine', target: 60 },
+    { id: 'scramble-break-50', name: 'Unbeatable', target: 50 },
   ].map(({ id, name, target }) => ({
     id,
     name,
@@ -491,6 +496,56 @@ export const ACHIEVEMENTS = [
     manual: true,
   },
 ]
+
+// Achievement categories, in display order. Every achievement maps to exactly
+// one of these via categoryOf(). `manual` is last so the "log it yourself"
+// feats sit at the bottom of the page.
+export const ACHIEVEMENT_CATEGORIES = [
+  { id: 'getting-started', label: 'Getting Started' },
+  { id: 'scoring', label: 'Scoring' },
+  { id: 'hole-feats', label: 'Hole Feats' },
+  { id: 'streaks', label: 'Streaks & Runs' },
+  { id: 'consistency', label: 'Consistency' },
+  { id: 'handicap', label: 'Handicap' },
+  { id: 'milestones', label: 'Milestones' },
+  { id: 'variety', label: 'Variety' },
+  { id: 'scramble', label: 'Scramble' },
+  { id: 'seasons', label: 'Seasons' },
+  { id: 'months', label: 'Months' },
+  { id: 'manual', label: 'Log It Yourself' },
+]
+
+const HOLE_FEAT_IDS = new Set(['first-par', 'first-birdie', 'first-eagle', 'first-albatross', 'hole-in-one'])
+const STREAK_IDS = new Set(['birdie-barrage', 'turkey', 'par-train', 'wall-of-pars', 'fore-right', 'tin-cup'])
+const CONSISTENCY_IDS = new Set([
+  'up-and-down', 'no-three-putts', 'all-gir', 'no-oob-round',
+  'bogey-or-better-all', 'par-or-better-all', 'par-after-oob',
+])
+const SCORING_IDS = new Set([
+  'break-100', 'break-90', 'break-80', 'even-par-round', 'under-par-round',
+  'break-60-nine', 'break-50-nine', 'break-40-nine', 'break-par-nine', 'par-nine',
+])
+const VARIETY_IDS = new Set(['play-par-3-course', 'two-rounds-day', 'seven-rounds-week'])
+const SEASON_IDS = new Set(['play-spring', 'play-summer', 'play-fall', 'play-winter', 'all-seasons'])
+const HANDICAP_IDS = new Set(['single-digit-handicap', 'scratch-handicap', 'plus-handicap'])
+
+// Which category an achievement belongs to (see ACHIEVEMENT_CATEGORIES).
+export function categoryOf(ach) {
+  if (ach.manual) return 'manual'
+  const id = ach.id
+  if (id === 'first-round') return 'getting-started'
+  if (HOLE_FEAT_IDS.has(id)) return 'hole-feats'
+  if (STREAK_IDS.has(id)) return 'streaks'
+  if (CONSISTENCY_IDS.has(id)) return 'consistency'
+  if (SCORING_IDS.has(id)) return 'scoring'
+  if (VARIETY_IDS.has(id)) return 'variety'
+  if (SEASON_IDS.has(id)) return 'seasons'
+  if (id === 'all-months' || id.startsWith('play-month-')) return 'months'
+  if (id.startsWith('scramble-')) return 'scramble'
+  if (id.startsWith('rounds-') || id.startsWith('courses-')) return 'milestones'
+  if (HANDICAP_IDS.has(id) || id.startsWith('handicap-under-')) return 'handicap'
+  return 'scoring'
+}
 
 // Per-hole predicates for streak/count achievements.
 const isBirdie = (h) => h.score != null && h.par != null && h.score === h.par - 1
