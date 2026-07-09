@@ -92,7 +92,14 @@ export default function BestScores() {
           <div className="grid cols-2">
             {selected.tasks.map((t) => (
               <div className={`achievement ${t.done ? '' : 'locked'}`} key={t.id}>
-                <div className="badge">{t.done ? '✓' : '○'}</div>
+                <div
+                  className="badge"
+                  style={t.done
+                    ? { background: 'var(--accent)', border: 'none', color: '#0a1509', fontWeight: 700 }
+                    : undefined}
+                >
+                  {t.done ? '✓' : '○'}
+                </div>
                 <div>
                   <div className="title">{t.label}</div>
                   <div className="desc">{t.detail}</div>
