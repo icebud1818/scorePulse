@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext.jsx'
 import { useData } from '../data/DataContext.jsx'
 import { ACHIEVEMENTS } from '../data/achievements.js'
 import { calculateHandicap, formatHandicap } from '../utils/handicap.js'
+import { PulseIcon, FlagIcon, TrophyIcon, TargetIcon, CircleIcon, WarnIcon } from '../components/Icons.jsx'
 import { isCountable, isIncomplete, isScramble, tracksStats } from '../utils/rounds.js'
 
 export default function Dashboard() {
@@ -222,52 +223,3 @@ function RecentRound({ round }) {
   )
 }
 
-// Inline stroke icons (no dependencies) — match the landing page's icon set.
-function PulseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 12h4l3 8 4-16 3 8h6" />
-    </svg>
-  )
-}
-function FlagIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 22V4" />
-      <path d="M4 4h11l-1.5 3L15 10H4" />
-    </svg>
-  )
-}
-function TrophyIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 4h12v4a6 6 0 0 1-12 0V4Z" />
-      <path d="M6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3" />
-      <path d="M9 20h6M12 14v6" />
-    </svg>
-  )
-}
-function TargetIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="5" />
-      <circle cx="12" cy="12" r="1" />
-    </svg>
-  )
-}
-function CircleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="8" />
-    </svg>
-  )
-}
-function WarnIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3 2 20h20L12 3Z" />
-      <path d="M12 10v4M12 17h.01" />
-    </svg>
-  )
-}

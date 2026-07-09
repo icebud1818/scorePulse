@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useData } from '../data/DataContext.jsx'
 import { isParThreeCourse, isScramble } from '../utils/rounds.js'
+import { TrophyIcon, TargetIcon, FlagIcon, CircleIcon, StarIcon, FlameIcon } from '../components/Icons.jsx'
 
 // Personal Records ("PRs") — bests and career totals across all rounds.
 //
@@ -227,51 +228,3 @@ function rec(id, label, best, format, icon, badge) {
   }
 }
 
-// Inline stroke icons (no dependencies) — shared visual language with the app.
-function TrophyIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 4h12v4a6 6 0 0 1-12 0V4Z" />
-      <path d="M6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3" />
-      <path d="M9 20h6M12 14v6" />
-    </svg>
-  )
-}
-function TargetIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="5" />
-      <circle cx="12" cy="12" r="1" />
-    </svg>
-  )
-}
-function FlagIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 22V4" />
-      <path d="M4 4h11l-1.5 3L15 10H4" />
-    </svg>
-  )
-}
-function CircleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="8" />
-    </svg>
-  )
-}
-function StarIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 18.8 6.7 19.2l1-5.8L3.5 9.2l5.9-.9L12 3Z" />
-    </svg>
-  )
-}
-function FlameIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3c1 3-1.5 4.5-1.5 7A3.5 3.5 0 0 0 14 13c0-1.5-1-2.5-.5-4 2 1 4 3.5 4 7a5.5 5.5 0 1 1-11 0c0-4 4-6 5.5-13Z" />
-    </svg>
-  )
-}

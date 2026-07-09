@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { FlagIcon, PulseIcon, TargetIcon, TrophyIcon } from '../components/Icons.jsx'
 
 // Public marketing / landing page shown at "/" to logged-out visitors.
 // Logged-in users get the Dashboard instead (see App.jsx routing).
@@ -88,61 +89,24 @@ export default function Home() {
 
 const FEATURES = [
   {
-    icon: <FlagIcon />,
+    icon: <FlagIcon size={24} />,
     title: 'Log rounds in seconds',
     desc: 'Per-hole scores plus optional putts, greens in regulation, and out-of-bounds. Preset courses or a custom one — nine or eighteen.',
   },
   {
-    icon: <PulseIcon />,
+    icon: <PulseIcon size={24} />,
     title: 'A handicap that keeps up',
     desc: 'Every round feeds a running differential so you always know your number. Scrambles and partial rounds are kept out automatically.',
   },
   {
-    icon: <TargetIcon />,
+    icon: <TargetIcon size={24} />,
     title: 'Best score per hole',
     desc: 'See your ideal round on each course — the lowest you\'ve ever carded on every hole, stacked up against par.',
   },
   {
-    icon: <TrophyIcon />,
+    icon: <TrophyIcon size={24} />,
     title: 'Achievements as you climb',
     desc: 'Break 100, break 90, card your first birdie — milestones unlock as your game grows.',
   },
 ]
 
-// Simple inline stroke icons — no dependencies, inherit the accent color.
-function FlagIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 22V4" />
-      <path d="M4 4h11l-1.5 3L15 10H4" />
-    </svg>
-  )
-}
-
-function PulseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 12h4l3 8 4-16 3 8h6" />
-    </svg>
-  )
-}
-
-function TargetIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="5" />
-      <circle cx="12" cy="12" r="1" />
-    </svg>
-  )
-}
-
-function TrophyIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 4h12v4a6 6 0 0 1-12 0V4Z" />
-      <path d="M6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3" />
-      <path d="M9 20h6M12 14v6" />
-    </svg>
-  )
-}
