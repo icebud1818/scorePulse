@@ -80,13 +80,13 @@ export const ACHIEVEMENTS = [
   {
     id: 'first-eagle',
     name: 'Soaring High',
-    description: 'Score two under par on any hole.',
+    description: 'Score an eagle — two under par on any hole.',
     check: (round) => round.holes.some((h) => h.score != null && h.par != null && h.score === h.par - 2),
   },
   {
     id: 'first-albatross',
     name: 'Rare Bird',
-    description: 'Score three under par on any hole.',
+    description: 'Score an albatross — three under par on any hole.',
     check: (round) => round.holes.some((h) => h.score != null && h.par != null && h.score === h.par - 3),
   },
   {
@@ -137,7 +137,7 @@ export const ACHIEVEMENTS = [
   },
   {
     id: 'break-par-nine',
-    name: 'Nine Under Par',
+    name: 'Red Hot',
     description: 'Shoot under par on a nine.',
     check: (round) => nines(round).some((n) => n.par > 0 && n.score < n.par),
   },
@@ -450,7 +450,7 @@ export const ACHIEVEMENTS = [
   {
     id: 'almost-ace',
     name: 'Almost Ace',
-    description: 'Land a shot within a foot of the hole.',
+    description: 'Land your tee shot within a foot of the hole.',
     manual: true,
   },
   {
@@ -474,7 +474,7 @@ export const ACHIEVEMENTS = [
   {
     id: 'rain-round',
     name: 'Rain or Shine',
-    description: 'Play a full round in the rain.',
+    description: 'Play in the rain.',
     manual: true,
   },
   {
