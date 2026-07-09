@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useData } from '../data/DataContext.jsx'
+import CourseCombobox from './CourseCombobox.jsx'
 import { fetchCourse } from '../utils/firestore.js'
 import { courseLookupEnabled, importCourse, searchCourses } from '../utils/courseApi.js'
 import { tracksStats } from '../utils/rounds.js'
@@ -25,11 +26,7 @@ export default function RoundForm({
   busyLabel = 'Saving…',
   heading = 'Log a round',
 }) {
-  const { courses, getCourse, addCourse } = useData()
-  const SORTED_COURSES = useMemo(
-    () => [...courses].sort((a, b) => a.name.localeCompare(b.name)),
-    [courses]
-  )
+  const { courses, getCourse, addCourse, rounds } = useData()
   const initialCourseId = resolveInitialCourseId(initialRound, courses, getCourse)
 
   const [date, setDate] = useState(initialRound?.date || todayIso())
@@ -67,6 +64,17 @@ export default function RoundForm({
   const [busy, setBusy] = useState(false)
 
   const preset = courseId !== CUSTOM ? getCourse(courseId) : null
+
+  // The dropdown lists only *your* courses — ones you've played plus your seeded
+  // presets — so the shared catalog (potentially thousands of courses) doesn't
+  // bloat it. Everything else is reachable via "Find a course". The currently
+  // selected course is always included (e.g. one just imported this session).
+  const SORTED_COURSES = useMemo(() => {
+    const played = new Set(rounds.map((r) => r.courseId).filter(Boolean))
+    return courses
+      .filter((c) => played.has(c.id) || c.source === 'preset' || c.id === courseId)
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [courses, rounds, courseId])
 
   // Course-search / import state (only used when the lookup Worker is configured).
   const [query, setQuery] = useState('')
@@ -273,15 +281,20 @@ export default function RoundForm({
             </div>
             <div>
               <label>Course</label>
-              <select value={courseId} onChange={(e) => onCourseChange(e.target.value)}>
-                {courseLookupEnabled && <option value={SEARCH}>+ Find a course…</option>}
-                <option value={CUSTOM}>+ Custom course…</option>
-                {SORTED_COURSES.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}{c.par3 ? ' (par 3 — doesn’t count)' : ''}
-                  </option>
-                ))}
-              </select>
+              <CourseCombobox
+                items={SORTED_COURSES.map((c) => ({
+                  id: c.id,
+                  label: c.name,
+                  note: c.par3 ? 'par 3' : undefined,
+                }))}
+                value={courseId}
+                onChange={onCourseChange}
+                actions={[
+                  ...(courseLookupEnabled ? [{ id: SEARCH, label: '+ Find a course…' }] : []),
+                  { id: CUSTOM, label: '+ Custom course…' },
+                ]}
+                placeholder="Search your courses…"
+              />
             </div>
             {courseId !== CUSTOM && preset?.tees?.length > 0 && (
               <div>
@@ -587,9 +600,14 @@ export default function RoundForm({
 }
 
 function resolveInitialCourseId(initialRound, courses, getCourse) {
-  if (!initialRound) return courses[0]?.id || CUSTOM
-  if (initialRound.courseId && getCourse(initialRound.courseId)) return initialRound.courseId
-  return CUSTOM
+  if (initialRound) {
+    if (initialRound.courseId && getCourse(initialRound.courseId)) return initialRound.courseId
+    return CUSTOM
+  }
+  // New round: default to one of the user's own (preset) courses rather than an
+  // arbitrary entry from the shared catalog.
+  const preset = courses.find((c) => c.source === 'preset')
+  return preset?.id || courses[0]?.id || CUSTOM
 }
 
 function toFormHole(h) {

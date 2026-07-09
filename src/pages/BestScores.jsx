@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useData } from '../data/DataContext.jsx'
+import CourseCombobox from '../components/CourseCombobox.jsx'
 import { seedPresetCourses } from '../utils/seedCourses.js'
 import { isIncomplete, isScramble, scoreColor } from '../utils/rounds.js'
 
@@ -41,20 +42,18 @@ export default function BestScores() {
       <div className="row">
         <h1 style={{ margin: 0 }}>Courses</h1>
         <div className="spacer" />
-        <div>
-          <label htmlFor="course-select">Course</label>
-          <select
-            id="course-select"
+        <div style={{ minWidth: 240 }}>
+          <label>Course</label>
+          <CourseCombobox
+            items={courses.map((c) => ({
+              id: c.key,
+              label: c.name,
+              note: c.completed ? '✓' : c.par3 ? 'par 3' : undefined,
+            }))}
             value={selected?.key || ''}
-            onChange={(e) => setSelectedKey(e.target.value)}
-            style={{ minWidth: 220 }}
-          >
-            {courses.map((c) => (
-              <option key={c.key} value={c.key}>
-                {c.completed ? '✓ ' : ''}{c.name}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedKey}
+            placeholder="Search courses…"
+          />
         </div>
       </div>
 
@@ -155,7 +154,12 @@ export default function BestScores() {
 // appear in rounds), each with its best-per-hole data and completion tasks,
 // sorted alphabetically by name.
 function buildCourses(rounds, catalog) {
-  const entries = catalog.map((c) => ({
+  // Only show catalog courses that are relevant to this user — ones they've
+  // played, or their seeded presets — not the entire shared catalog.
+  const playedIds = new Set(rounds.map((r) => r.courseId).filter(Boolean))
+  const mine = catalog.filter((c) => playedIds.has(c.id) || c.source === 'preset')
+
+  const entries = mine.map((c) => ({
     key: c.id,
     name: c.name,
     par3: c.par3 === true,

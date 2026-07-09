@@ -187,6 +187,36 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .spacer { flex: 1; }
 
+/* Searchable course picker (CourseCombobox). */
+.combobox { position: relative; }
+.combobox-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.55);
+}
+.combobox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.combobox-option .muted { margin-left: auto; font-size: 0.75rem; }
+.combobox-option.active { background: var(--panel-2); }
+.combobox-option.combobox-pinned span:first-child { color: var(--accent); }
+.combobox-sep { height: 1px; background: var(--border); margin: 4px 6px; }
+.combobox-empty { padding: 9px 10px; color: var(--muted); font-size: 0.9rem; }
+
 .holes-table th, .holes-table td { padding: 6px 8px; text-align: center; }
 .holes-table input { width: 60px; padding: 4px 6px; text-align: center; }
 .holes-table input[type="checkbox"] { width: auto; }
