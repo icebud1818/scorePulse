@@ -25,7 +25,7 @@ export default function BestScores() {
   return (
     <div className="container">
       <div className="row">
-        <h1 style={{ margin: 0 }}>Best scores & completion</h1>
+        <h1 style={{ margin: 0 }}>Courses</h1>
         <div className="spacer" />
         <div>
           <label htmlFor="course-select">Course</label>
@@ -212,6 +212,7 @@ function computeCourse(course, allRounds) {
   const scoreTarget = course.par3 ? 72 : 90
   const bestFull = fullRounds.length ? Math.min(...fullRounds.map((r) => r.totalScore)) : null
   const brokeTarget = bestFull != null && bestFull < scoreTarget
+  const broke100 = bestFull != null && bestFull < 100
 
   const playCount = rounds.length
 
@@ -221,6 +222,12 @@ function computeCourse(course, allRounds) {
       label: 'Play the course',
       done: playCount >= 1,
       detail: playCount ? `${playCount} round${playCount === 1 ? '' : 's'} played` : 'Not played yet',
+    },
+    {
+      id: 'par-one',
+      label: 'Make a par',
+      done: parredCount >= 1,
+      detail: parredCount ? 'Parred a hole (or better)' : 'No pars yet',
     },
     {
       id: 'par-all',
@@ -234,6 +241,17 @@ function computeCourse(course, allRounds) {
       done: hasBirdie,
       detail: hasBirdie ? 'Carded a birdie (or better)' : 'No birdies yet',
     },
+    ...(course.par3
+      ? []
+      : [
+          {
+            id: 'break-100',
+            label: 'Break 100',
+            done: broke100,
+            detail:
+              bestFull != null ? `Best full round: ${bestFull}` : 'No complete rounds yet',
+          },
+        ]),
     {
       id: 'break',
       label: `Break ${scoreTarget}`,
@@ -242,6 +260,12 @@ function computeCourse(course, allRounds) {
         bestFull != null
           ? `Best full round: ${bestFull}`
           : 'No complete rounds yet',
+    },
+    {
+      id: 'played-3',
+      label: 'Play 3 rounds',
+      done: playCount >= 3,
+      detail: `${Math.min(playCount, 3)} of 3 rounds`,
     },
     {
       id: 'played-5',

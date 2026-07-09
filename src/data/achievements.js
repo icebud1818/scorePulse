@@ -16,12 +16,12 @@ const MONTH_NAMES = [
 
 // Flagship names for round-count milestones; other tiers fall back to "N Rounds".
 const ROUND_MILESTONE_NAMES = {
-  10: 'Regular',
-  25: 'Committed',
+  10: 'Getting Hooked',
+  25: 'Dedicated',
   50: 'Half Century',
   100: 'Centurion',
   200: 'Double Century',
-  250: 'Fairway Veteran',
+  250: 'Ironman',
 }
 
 // Flagship names for course-variety milestones; others fall back to "N Courses".
@@ -29,7 +29,13 @@ const COURSE_MILESTONE_NAMES = {
   3: 'Getting Around',
   5: 'Explorer',
   10: 'Well Traveled',
+  15: 'Wanderer',
+  20: 'Voyager',
   25: 'Course Collector',
+  30: 'Road Warrior',
+  35: 'Frequent Flyer',
+  40: 'Jetsetter',
+  45: 'World Tour',
   50: 'Globetrotter',
 }
 
@@ -42,19 +48,19 @@ export const ACHIEVEMENTS = [
   },
   {
     id: 'break-100',
-    name: 'Breaking 100',
+    name: 'Double Digits',
     description: 'Shoot under 100 on an 18-hole round.',
     check: (round) => round.holes.length === 18 && round.totalScore < 100,
   },
   {
     id: 'break-90',
-    name: 'Breaking 90',
+    name: 'Breaking Through',
     description: 'Shoot under 90 on an 18-hole round.',
     check: (round) => round.holes.length === 18 && round.totalScore < 90,
   },
   {
     id: 'first-birdie',
-    name: 'First Birdie',
+    name: 'Bird Is The Word',
     description: 'Score one under par on any hole.',
     check: (round) => round.holes.some((h) => h.score != null && h.score === h.par - 1),
   },
@@ -68,19 +74,19 @@ export const ACHIEVEMENTS = [
   },
   {
     id: 'first-eagle',
-    name: 'Eagle',
+    name: 'Soaring High',
     description: 'Score two under par on any hole.',
     check: (round) => round.holes.some((h) => h.score != null && h.par != null && h.score === h.par - 2),
   },
   {
     id: 'first-albatross',
-    name: 'Albatross',
+    name: 'Rare Bird',
     description: 'Score three under par on any hole.',
     check: (round) => round.holes.some((h) => h.score != null && h.par != null && h.score === h.par - 3),
   },
   {
     id: 'hole-in-one',
-    name: 'Hole in One',
+    name: 'Ace!',
     description: 'Ace any hole — one shot, one hole.',
     check: (round) => round.holes.some((h) => h.score === 1),
   },
@@ -88,19 +94,19 @@ export const ACHIEVEMENTS = [
   // ---- Round scoring ----
   {
     id: 'break-80',
-    name: 'Breaking 80',
+    name: 'Club Champion',
     description: 'Shoot under 80 on an 18-hole round.',
     check: (round) => round.holes.length === 18 && round.totalScore < 80,
   },
   {
     id: 'even-par-round',
-    name: 'Level Par',
+    name: 'Par Excellence',
     description: 'Shoot even par over an 18-hole round.',
     check: (round) => round.holes.length === 18 && round.totalScore === round.totalPar,
   },
   {
     id: 'under-par-round',
-    name: 'Red Numbers',
+    name: 'Into The Red',
     description: 'Shoot under par over an 18-hole round.',
     check: (round) => round.holes.length === 18 && round.totalScore < round.totalPar,
   },
@@ -108,19 +114,19 @@ export const ACHIEVEMENTS = [
   // ---- Nine-hole scoring (front or back nine of any round) ----
   {
     id: 'break-60-nine',
-    name: 'Nine Under 60',
+    name: 'Getting Warmed Up',
     description: 'Score under 60 on a nine.',
     check: (round) => nines(round).some((n) => n.score < 60),
   },
   {
     id: 'break-50-nine',
-    name: 'Nine Under 50',
+    name: 'Heating Up',
     description: 'Score under 50 on a nine.',
     check: (round) => nines(round).some((n) => n.score < 50),
   },
   {
     id: 'break-40-nine',
-    name: 'Nine Under 40',
+    name: 'Dialed In',
     description: 'Score under 40 on a nine.',
     check: (round) => nines(round).some((n) => n.score < 40),
   },
@@ -134,7 +140,7 @@ export const ACHIEVEMENTS = [
   // ---- Stat feats ----
   {
     id: 'up-and-down',
-    name: 'Up and Down',
+    name: 'One And Done',
     description: 'One-putt a hole.',
     check: (round) => round.holes.some((h) => h.putts === 1),
   },
@@ -162,10 +168,54 @@ export const ACHIEVEMENTS = [
       round.holes.every((h) => !(typeof h.ob === 'number' && h.ob > 0)),
   },
 
+  // ---- Streaks & counts within a round ----
+  {
+    id: 'birdie-barrage',
+    name: 'Birdie Barrage',
+    description: 'Make three birdies in a single round.',
+    check: (round) => round.holes.filter(isBirdie).length >= 3,
+  },
+  {
+    id: 'turkey',
+    name: 'Turkey',
+    description: 'Make three birdies in a row.',
+    check: (round) => maxStreak(round, isBirdie) >= 3,
+  },
+  {
+    id: 'par-train',
+    name: 'Par Train',
+    description: 'Make five pars in a row.',
+    check: (round) => maxStreak(round, isPar) >= 5,
+  },
+  {
+    id: 'wall-of-pars',
+    name: 'Wall of Pars',
+    description: 'Make nine pars in a single round.',
+    check: (round) => round.holes.filter(isPar).length >= 9,
+  },
+  {
+    id: 'fore-right',
+    name: 'Fore Right!',
+    description: 'Hit out of bounds on consecutive holes.',
+    check: (round) => maxStreak(round, isOob) >= 2,
+  },
+  {
+    id: 'tin-cup',
+    name: 'Tin Cup',
+    description: 'Hit out of bounds five times in a single round.',
+    check: (round) =>
+      round.holes.reduce((sum, h) => sum + (typeof h.ob === 'number' && h.ob > 0 ? h.ob : 0), 0) >= 5,
+  },
+
   // ---- Handicap milestones (breaking thresholds toward scratch) ----
-  ...[30, 25, 20, 15].map((n) => ({
+  ...[
+    { n: 30, name: 'Getting Serious' },
+    { n: 25, name: 'Finding Your Swing' },
+    { n: 20, name: 'Weekend Warrior' },
+    { n: 15, name: 'Club Contender' },
+  ].map(({ n, name }) => ({
     id: `handicap-under-${n}`,
-    name: `Breaking ${n}`,
+    name,
     description: `Reach a handicap below ${n}.`,
     check: (round, allRounds) => {
       const h = calculateHandicap([round, ...allRounds])
@@ -183,7 +233,7 @@ export const ACHIEVEMENTS = [
   },
   {
     id: 'handicap-under-5',
-    name: 'Breaking 5',
+    name: 'Elite Company',
     description: 'Reach a handicap below 5.',
     check: (round, allRounds) => {
       const h = calculateHandicap([round, ...allRounds])
@@ -192,7 +242,7 @@ export const ACHIEVEMENTS = [
   },
   {
     id: 'scratch-handicap',
-    name: 'Scratch',
+    name: 'Scratch Golfer',
     description: 'Reach a handicap of 0 or better.',
     check: (round, allRounds) => {
       const h = calculateHandicap([round, ...allRounds])
@@ -201,7 +251,7 @@ export const ACHIEVEMENTS = [
   },
   {
     id: 'plus-handicap',
-    name: 'Plus Handicap',
+    name: 'Tour Material',
     description: 'Reach a handicap better than scratch (below 0).',
     check: (round, allRounds) => {
       const h = calculateHandicap([round, ...allRounds])
@@ -441,6 +491,27 @@ export const ACHIEVEMENTS = [
     manual: true,
   },
 ]
+
+// Per-hole predicates for streak/count achievements.
+const isBirdie = (h) => h.score != null && h.par != null && h.score === h.par - 1
+const isPar = (h) => h.score != null && h.par != null && h.score === h.par
+const isOob = (h) => typeof h.ob === 'number' && h.ob > 0
+
+// Longest run of consecutive holes satisfying `pred`, in hole order.
+function maxStreak(round, pred) {
+  const holes = Array.isArray(round.holes) ? round.holes : []
+  let best = 0
+  let cur = 0
+  for (const h of holes) {
+    if (pred(h)) {
+      cur += 1
+      if (cur > best) best = cur
+    } else {
+      cur = 0
+    }
+  }
+  return best
+}
 
 // The complete nines within a round (front and/or back), each summed to
 // { score, par }. An 18-hole round yields two; a 9-hole round yields one.
