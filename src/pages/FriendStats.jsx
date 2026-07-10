@@ -6,7 +6,12 @@ import {
   fetchProfile,
   fetchRounds,
 } from '../utils/firestore.js'
-import { ACHIEVEMENTS } from '../data/achievements.js'
+import {
+  ACHIEVEMENTS,
+  ACHIEVEMENT_CATEGORIES,
+  categoryOf,
+  iconForAchievement,
+} from '../data/achievements.js'
 import { calculateHandicap, formatHandicap } from '../utils/handicap.js'
 import { isCountable, tracksStats } from '../utils/rounds.js'
 import { PulseIcon, FlagIcon, TrophyIcon, TargetIcon, CircleIcon, WarnIcon } from '../components/Icons.jsx'
@@ -81,7 +86,7 @@ export default function FriendStats() {
             status: 'ok',
             profile,
             rounds: enrichPar3(rounds, courses),
-            earnedCount: achs.length,
+            earnedIds: achs.map((a) => a.id),
           })
         }
       } catch {
@@ -118,7 +123,7 @@ export default function FriendStats() {
     )
   }
 
-  const { profile, rounds, earnedCount } = state
+  const { profile, rounds, earnedIds } = state
   const name = profile.displayName || profile.email?.split('@')[0] || 'Golfer'
   const handicap = calculateHandicap(rounds)
   const totalRounds = rounds.length
@@ -127,7 +132,17 @@ export default function FriendStats() {
     ? eighteen.reduce((best, r) => (r.totalScore < best.totalScore ? r : best))
     : null
   const stats = summarize(rounds)
+  const earnedSet = new Set(earnedIds)
+  const earnedCount = ACHIEVEMENTS.filter((a) => earnedSet.has(a.id)).length
   const achPct = ACHIEVEMENTS.length ? Math.round((earnedCount / ACHIEVEMENTS.length) * 100) : 0
+
+  // Bucket achievements by category, preserving declaration order (mirrors the
+  // Achievements page). Rendered read-only — no manual toggles for a friend.
+  const byCategory = new Map(ACHIEVEMENT_CATEGORIES.map((c) => [c.id, []]))
+  for (const a of ACHIEVEMENTS) {
+    const cat = categoryOf(a)
+    if (byCategory.has(cat)) byCategory.get(cat).push(a)
+  }
 
   return (
     <div className="container">
@@ -209,6 +224,50 @@ export default function FriendStats() {
         <div className="progress"><span style={{ width: `${achPct}%` }} /></div>
         <div className="stat-sub">{achPct}% complete</div>
       </div>
+
+      {ACHIEVEMENT_CATEGORIES.map((cat) => {
+        const items = byCategory.get(cat.id)
+        if (!items || items.length === 0) return null
+
+        // Earned first, then locked; declaration order within each group.
+        const sorted = [
+          ...items.filter((a) => earnedSet.has(a.id)),
+          ...items.filter((a) => !earnedSet.has(a.id)),
+        ]
+        const done = items.filter((a) => earnedSet.has(a.id)).length
+
+        return (
+          <section key={cat.id} style={{ marginBottom: 28 }}>
+            <div className="row" style={{ alignItems: 'baseline' }}>
+              <h2 style={{ margin: '0 0 4px' }}>{cat.label}</h2>
+              <div className="spacer" />
+              <div className="muted">{done} / {items.length}</div>
+            </div>
+            <div className="grid cols-2">
+              {sorted.map((a) => {
+                const earned = earnedSet.has(a.id)
+                return (
+                  <div className={`achievement ${earned ? '' : 'locked'}`} key={a.id}>
+                    <div
+                      className="badge"
+                      style={earned ? {
+                        background: `rgba(${cat.color},0.16)`,
+                        border: `1px solid rgba(${cat.color},0.4)`,
+                      } : undefined}
+                    >
+                      {iconForAchievement(a)}
+                    </div>
+                    <div>
+                      <div className="title">{a.name}</div>
+                      <div className="desc">{a.description}</div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )
+      })}
     </div>
   )
 }
