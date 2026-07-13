@@ -39,9 +39,25 @@ export default {
       }
       return json({ error: 'Not found' }, 404, cors)
     } catch (err) {
+      // The upstream free tier allows 50 requests/day — surface a clear message
+      // (and pass the 429 through) instead of a cryptic "failed (429)".
+      if (err.status === 429) {
+        return json(
+          { error: 'Daily course-search limit reached (50/day). Try again tomorrow, or add the course manually.' },
+          429,
+          cors
+        )
+      }
       return json({ error: err.message || 'Upstream error' }, 502, cors)
     }
   },
+}
+
+// Error that carries the upstream HTTP status so the handler can map rate limits.
+function upstreamError(status, label) {
+  const err = new Error(`${label} failed (${status})`)
+  err.status = status
+  return err
 }
 
 function corsHeaders(origin, env) {
@@ -71,7 +87,7 @@ async function search(query, env) {
   const res = await fetch(`${API_BASE}/search?search_query=${encodeURIComponent(query)}`, {
     headers: { Authorization: authHeader(env) },
   })
-  if (!res.ok) throw new Error(`Search failed (${res.status})`)
+  if (!res.ok) throw upstreamError(res.status, 'Search')
   const data = await res.json()
   const courses = data.courses || data.results || []
   return courses.map((c) => ({
@@ -86,7 +102,7 @@ async function getCourse(id, env) {
     headers: { Authorization: authHeader(env) },
   })
   if (res.status === 404) return null
-  if (!res.ok) throw new Error(`Lookup failed (${res.status})`)
+  if (!res.ok) throw upstreamError(res.status, 'Lookup')
   const data = await res.json()
   // Some deployments wrap the course under `course`.
   return transformCourse(data.course || data)
