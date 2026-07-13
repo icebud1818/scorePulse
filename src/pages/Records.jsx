@@ -226,12 +226,12 @@ function computeRecords(allRounds) {
     { id: 'rounds', label: 'Rounds logged', value: allRounds.length, accent: 'var(--border)' },
     { id: 'holes', label: 'Holes played', value: holesPlayed, accent: 'var(--border)' },
     { id: 'courses', label: 'Courses played', value: courseSet.size, accent: 'var(--border)' },
+    { id: 'bogeys', label: 'Total bogeys', value: bogeys, accent: '#f87171', color: '#f87171' },
     { id: 'pars', label: 'Total pars', value: pars, accent: '#4ade80', color: '#4ade80' },
     { id: 'birdies', label: 'Total birdies', value: birdies, accent: '#38bdf8', color: '#38bdf8' },
     { id: 'eagles', label: 'Total eagles', value: eagles, accent: '#fbbf24', color: '#fbbf24' },
     { id: 'albatrosses', label: 'Total albatrosses', value: albatrosses, accent: '#a78bfa', color: '#a78bfa' },
     { id: 'aces', label: 'Total hole-in-ones', value: aces, accent: '#fb7185', color: '#fb7185' },
-    { id: 'bogeys', label: 'Total bogeys', value: bogeys, accent: '#f87171', color: '#f87171' },
     { id: 'gir', label: 'Greens in regulation', value: gir, accent: '#2dd4bf', color: '#2dd4bf', sub: 'Tracked rounds only' },
   ]
 
