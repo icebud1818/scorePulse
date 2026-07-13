@@ -91,14 +91,7 @@ export default function BestScores() {
           <div className="grid cols-2" style={{ marginTop: 16 }}>
             <div className="card stat-tile">
               <div className="stat-label">Best score</div>
-              <div
-                className="stat-value"
-                style={selected.bestScore != null && selected.totalPar
-                  ? { color: scoreColor(selected.bestScore - selected.totalPar) }
-                  : undefined}
-              >
-                {selected.bestScore ?? '—'}
-              </div>
+              <div className="stat-value">{selected.bestScore ?? '—'}</div>
               <div className="stat-sub">
                 {selected.fullRoundCount
                   ? `${selected.fullRoundCount} complete round${selected.fullRoundCount === 1 ? '' : 's'}`
@@ -107,12 +100,7 @@ export default function BestScores() {
             </div>
             <div className="card stat-tile">
               <div className="stat-label">Average score</div>
-              <div
-                className="stat-value"
-                style={selected.avgScore != null && selected.totalPar
-                  ? { color: scoreColor(selected.avgScore - selected.totalPar) }
-                  : undefined}
-              >
+              <div className="stat-value">
                 {selected.avgScore != null ? selected.avgScore.toFixed(1) : '—'}
               </div>
               <div className="stat-sub">Complete rounds only</div>
