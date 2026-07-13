@@ -88,6 +88,37 @@ export default function BestScores() {
             )}
           </div>
 
+          <div className="grid cols-2" style={{ marginTop: 16 }}>
+            <div className="card stat-tile">
+              <div className="stat-label">Best score</div>
+              <div
+                className="stat-value"
+                style={selected.bestScore != null && selected.totalPar
+                  ? { color: scoreColor(selected.bestScore - selected.totalPar) }
+                  : undefined}
+              >
+                {selected.bestScore ?? '—'}
+              </div>
+              <div className="stat-sub">
+                {selected.fullRoundCount
+                  ? `${selected.fullRoundCount} complete round${selected.fullRoundCount === 1 ? '' : 's'}`
+                  : 'No complete rounds yet'}
+              </div>
+            </div>
+            <div className="card stat-tile">
+              <div className="stat-label">Average score</div>
+              <div
+                className="stat-value"
+                style={selected.avgScore != null && selected.totalPar
+                  ? { color: scoreColor(selected.avgScore - selected.totalPar) }
+                  : undefined}
+              >
+                {selected.avgScore != null ? selected.avgScore.toFixed(1) : '—'}
+              </div>
+              <div className="stat-sub">Complete rounds only</div>
+            </div>
+          </div>
+
           <h3 style={{ margin: '20px 0 10px', fontSize: '1rem' }}>Completion</h3>
           <div className="grid cols-2">
             {selected.tasks.map((t) => (
@@ -249,7 +280,11 @@ function computeCourse(course, allRounds) {
       r.holes.every((h) => typeof h.score === 'number')
   )
   const scoreTarget = course.par3 ? 72 : 90
-  const bestFull = fullRounds.length ? Math.min(...fullRounds.map((r) => r.totalScore)) : null
+  const fullScores = fullRounds.map((r) => r.totalScore)
+  const bestFull = fullScores.length ? Math.min(...fullScores) : null
+  const avgFull = fullScores.length
+    ? fullScores.reduce((s, v) => s + v, 0) / fullScores.length
+    : null
   const brokeTarget = bestFull != null && bestFull < scoreTarget
   const broke100 = bestFull != null && bestFull < 100
 
@@ -323,6 +358,9 @@ function computeCourse(course, allRounds) {
     bestPerHole,
     totalBest,
     totalPar,
+    bestScore: bestFull,
+    avgScore: avgFull,
+    fullRoundCount: fullRounds.length,
     tasks,
     doneCount,
     completed,
