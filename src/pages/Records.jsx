@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useData } from '../data/DataContext.jsx'
-import { isParThreeCourse, isScramble } from '../utils/rounds.js'
+import { isParThreeCourse, isScramble, tracksStats } from '../utils/rounds.js'
 import { TrophyIcon, TargetIcon, FlagIcon, CircleIcon, StarIcon, FlameIcon } from '../components/Icons.jsx'
 
 // Personal Records ("PRs") — bests and career totals across all rounds.
@@ -41,9 +41,15 @@ export default function Records() {
                 <div className="stat-value" style={t.color ? { color: t.color } : undefined}>
                   {t.value}
                 </div>
+                {t.sub ? <div className="stat-sub">{t.sub}</div> : null}
               </div>
             ))}
           </div>
+
+          <p className="muted" style={{ marginTop: 24, fontSize: '0.85rem' }}>
+            Scramble rounds count only toward rounds logged and holes played — they're
+            excluded from every other record and total on this page.
+          </p>
         </>
       )}
     </div>
@@ -187,12 +193,24 @@ function computeRecords(allRounds) {
     rec('birdie-streak', 'Longest birdie-or-better streak', birdieStreak, (v) => v, <FlameIcon />, 'amber'),
   ]
 
+  // Rounds logged and holes played count EVERY round (scrambles included);
+  // all other totals below exclude scrambles, matching the rest of the page.
+  let holesPlayed = 0
+  for (const r of allRounds) {
+    for (const h of holesOf(r)) if (scored(h)) holesPlayed += 1
+  }
+
   // Career totals across every non-scramble round (incomplete included).
-  let pars = 0, birdies = 0, eagles = 0, albatrosses = 0, aces = 0, holesPlayed = 0
+  let pars = 0, birdies = 0, eagles = 0, albatrosses = 0, aces = 0, bogeys = 0
+  let gir = 0 // greens in regulation — only from stat-tracked rounds
+  const courseSet = new Set()
   for (const r of rounds) {
+    const courseKey = r.courseId ?? r.courseName
+    if (courseKey != null && courseKey !== '') courseSet.add(courseKey)
+    const roundTracks = tracksStats(r)
     for (const h of holesOf(r)) {
+      if (roundTracks && h.gir === true) gir += 1
       if (!scored(h)) continue
-      holesPlayed += 1
       if (h.score === 1) aces += 1
       if (typeof h.par !== 'number') continue
       const diff = h.score - h.par
@@ -200,20 +218,24 @@ function computeRecords(allRounds) {
       else if (diff === -1) birdies += 1
       else if (diff === -2) eagles += 1
       else if (diff <= -3) albatrosses += 1
+      else if (diff === 1) bogeys += 1
     }
   }
 
   const totals = [
-    { id: 'rounds', label: 'Rounds logged', value: rounds.length, accent: 'var(--border)' },
+    { id: 'rounds', label: 'Rounds logged', value: allRounds.length, accent: 'var(--border)' },
     { id: 'holes', label: 'Holes played', value: holesPlayed, accent: 'var(--border)' },
+    { id: 'courses', label: 'Courses played', value: courseSet.size, accent: 'var(--border)' },
     { id: 'pars', label: 'Total pars', value: pars, accent: '#4ade80', color: '#4ade80' },
     { id: 'birdies', label: 'Total birdies', value: birdies, accent: '#38bdf8', color: '#38bdf8' },
     { id: 'eagles', label: 'Total eagles', value: eagles, accent: '#fbbf24', color: '#fbbf24' },
     { id: 'albatrosses', label: 'Total albatrosses', value: albatrosses, accent: '#a78bfa', color: '#a78bfa' },
     { id: 'aces', label: 'Total hole-in-ones', value: aces, accent: '#fb7185', color: '#fb7185' },
+    { id: 'bogeys', label: 'Total bogeys', value: bogeys, accent: '#f87171', color: '#f87171' },
+    { id: 'gir', label: 'Greens in regulation', value: gir, accent: '#2dd4bf', color: '#2dd4bf', sub: 'Tracked rounds only' },
   ]
 
-  return { roundCount: rounds.length, roundRecords, totals }
+  return { roundCount: allRounds.length, roundRecords, totals }
 }
 
 // Build a round-record entry for display. `best` is { value, round } or null.
