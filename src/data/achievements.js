@@ -563,7 +563,7 @@ const ACHIEVEMENT_EMOJI = {
   'break-90': '🎯',
   'break-80': '🥇',
   'even-par-round': '⚖️',
-  'under-par-round': '🔴',
+  'under-par-round': '😍️',
   'break-60-nine': '🌡️',
   'break-50-nine': '♨️',
   'break-40-nine': '🌶️',
@@ -607,7 +607,7 @@ const ACHIEVEMENT_EMOJI = {
   // Variety
   'play-par-3-course': '⛳',
   'two-rounds-day': '🔁',
-  'seven-rounds-week': '🥴',
+  'seven-rounds-week': '🥳️',
 
   // Seasons
   'play-spring': '🌸',
@@ -635,7 +635,7 @@ const ACHIEVEMENT_EMOJI = {
   'chip-in': '🥏',
   'sand-save': '🏖️',
   'bunker-hole-out': '💥',
-  'almost-ace': '😬',
+  'almost-ace': '🤏️',
   'water-skipper': '🌊',
   'drive-the-green': '🟩',
   'long-drive-300': '🚀',
