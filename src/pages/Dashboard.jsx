@@ -6,6 +6,7 @@ import { ACHIEVEMENTS } from '../data/achievements.js'
 import { calculateHandicap, formatHandicap } from '../utils/handicap.js'
 import { PulseIcon, FlagIcon, TrophyIcon, TargetIcon, CircleIcon, WarnIcon } from '../components/Icons.jsx'
 import { isCountable, isIncomplete, isScramble, tracksStats } from '../utils/rounds.js'
+import ScoreTrendChart from '../components/ScoreTrendChart.jsx'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -163,6 +164,11 @@ export default function Dashboard() {
               : 'No rounds logged yet'}
           </div>
         </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 16 }}>
+        <h2 style={{ marginTop: 0 }}>Scoring trend</h2>
+        <ScoreTrendChart rounds={rounds} />
       </div>
 
       <div className="grid cols-2" style={{ marginTop: 16 }}>
