@@ -466,6 +466,19 @@ tbody tr:hover { background: var(--row-hover); }
 .icon-badge.pink { color: #fb7185; background: rgba(251, 113, 133, 0.12); border-color: rgba(251, 113, 133, 0.25); }
 .icon-badge.orange { color: #fb923c; background: rgba(251, 146, 60, 0.12); border-color: rgba(251, 146, 60, 0.25); }
 
+/* Segmented toggle (e.g. metric switch on the scoring trend chart). */
+.segmented { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.segmented button {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 5px 14px;
+  font-size: 0.82rem;
+}
+.segmented button:hover:not(.active) { background: var(--panel-2); }
+.segmented button.active { background: var(--accent); color: #0a1509; font-weight: 700; }
+
 /* Score breakdown bar chart (round detail). */
 .score-breakdown {
   display: flex;
