@@ -1,18 +1,20 @@
 // scorePulse course-lookup proxy (Cloudflare Worker).
 //
-// Keeps the golfcourseapi.com API key server-side. The browser never sees it —
-// it only talks to this Worker, which is locked (via CORS) to your app origin.
+// Proxies the OpenGC API (https://api.opengc.net) so the browser can reach it
+// without hitting CORS — OpenGC returns no Access-Control-Allow-Origin, so a
+// direct browser call is blocked. OpenGC needs no API key; this Worker just
+// forwards, locks CORS to your app origin, and reshapes the response into
+// scorePulse's own course shape (per-hole pars + per-tee rating/slope).
 //
-// Endpoints:
-//   GET /search?q=<text>   → [{ externalId, name, location }]
+// Endpoints (unchanged contract — the client in src/utils/courseApi.js is
+// source-agnostic):
+//   GET /search?q=<text>   → [{ externalId, name, location }]   (externalId = club id)
 //   GET /course?id=<id>    → a course in scorePulse's own shape (ready to store)
 //
-// Secrets / vars (see worker/wrangler.toml):
-//   GOLF_API_KEY   (secret)  your golfcourseapi.com key   — `wrangler secret put GOLF_API_KEY`
-//   ALLOWED_ORIGIN (var)     comma-separated app origins allowed to call this
-//   AUTH_SCHEME    (var)     Authorization prefix for the upstream key (default "Key")
+// Vars (see worker/wrangler.toml):
+//   ALLOWED_ORIGIN (var)   comma-separated app origins allowed to call this
 
-const API_BASE = 'https://api.golfcourseapi.com/v1'
+const API_BASE = 'https://api.opengc.net/api'
 
 export default {
   async fetch(request, env) {
@@ -28,36 +30,23 @@ export default {
       if (url.pathname === '/search') {
         const q = (url.searchParams.get('q') || '').trim()
         if (!q) return json({ error: 'Missing query' }, 400, cors)
-        return json({ results: await search(q, env) }, 200, cors)
+        return json({ results: await search(q) }, 200, cors)
       }
       if (url.pathname === '/course') {
         const id = (url.searchParams.get('id') || '').trim()
         if (!id) return json({ error: 'Missing id' }, 400, cors)
-        const course = await getCourse(id, env)
+        const course = await getCourse(id)
         if (!course) return json({ error: 'Course not found' }, 404, cors)
         return json({ course }, 200, cors)
       }
       return json({ error: 'Not found' }, 404, cors)
     } catch (err) {
-      // The upstream free tier allows 50 requests/day — surface a clear message
-      // (and pass the 429 through) instead of a cryptic "failed (429)".
       if (err.status === 429) {
-        return json(
-          { error: 'Daily course-search limit reached (50/day). Try again tomorrow, or add the course manually.' },
-          429,
-          cors
-        )
+        return json({ error: 'Course lookup is busy right now — try again in a moment.' }, 429, cors)
       }
       return json({ error: err.message || 'Upstream error' }, 502, cors)
     }
   },
-}
-
-// Error that carries the upstream HTTP status so the handler can map rate limits.
-function upstreamError(status, label) {
-  const err = new Error(`${label} failed (${status})`)
-  err.status = status
-  return err
 }
 
 function corsHeaders(origin, env) {
@@ -78,100 +67,120 @@ function json(body, status, headers) {
   })
 }
 
-function authHeader(env) {
-  const scheme = env.AUTH_SCHEME || 'Key'
-  return `${scheme} ${env.GOLF_API_KEY}`
+// Error that carries the upstream HTTP status so the handler can map rate limits.
+function upstreamError(status, label) {
+  const err = new Error(`${label} failed (${status})`)
+  err.status = status
+  return err
 }
 
-async function search(query, env) {
-  const res = await fetch(`${API_BASE}/search?search_query=${encodeURIComponent(query)}`, {
-    headers: { Authorization: authHeader(env) },
-  })
-  if (!res.ok) throw upstreamError(res.status, 'Search')
-  const data = await res.json()
-  const courses = data.courses || data.results || []
-  return courses.map((c) => ({
+async function fetchJson(path, label) {
+  const res = await fetch(`${API_BASE}${path}`, { headers: { Accept: 'application/json' } })
+  if (!res.ok) throw upstreamError(res.status, label)
+  return res.json()
+}
+
+// ---- Search: clubs by name → [{ externalId, name, location }] ----
+
+async function search(query) {
+  const data = await fetchJson(
+    `/clubs?page=1&limit=20&search=${encodeURIComponent(query)}`,
+    'Search'
+  )
+  const clubs = Array.isArray(data?.data) ? data.data : []
+  return clubs.map((c) => ({
     externalId: c.id,
-    name: courseName(c),
-    location: formatLocation(c.location),
+    name: c.name || 'Unnamed course',
+    location: formatLocation(c),
   }))
 }
 
-async function getCourse(id, env) {
-  const res = await fetch(`${API_BASE}/courses/${encodeURIComponent(id)}`, {
-    headers: { Authorization: authHeader(env) },
-  })
-  if (res.status === 404) return null
-  if (!res.ok) throw upstreamError(res.status, 'Lookup')
-  const data = await res.json()
-  // Some deployments wrap the course under `course`.
-  return transformCourse(data.course || data)
-}
+// ---- Detail: club id → one scorePulse course ----
 
-// ---- API response → scorePulse course shape ----
+async function getCourse(clubId) {
+  const data = await fetchJson(`/clubs/${encodeURIComponent(clubId)}`, 'Lookup')
+  const club = data?.data
+  if (!club) return null
 
-function transformCourse(api) {
-  const tees = buildTees(api)
-  const pars = buildPars(api)
-  const par3 = pars.length > 0 && pars.every((p) => p === 3)
+  const course = pickPrimaryCourse(club.courses)
+  if (!course) throw new Error('No scorecard is available for this course yet.')
+
+  const tees = buildTees(course)
+  const pars = buildPars(course)
+  if (pars.length === 0) throw new Error('No hole data is available for this course yet.')
+  const par3 = pars.every((p) => p === 3)
+
   return {
-    id: `gca-${api.id}`,
-    name: courseName(api),
+    id: `ogc-${course.id}`,
+    name: courseName(club, course),
     pars,
     par3,
     tees,
-    source: 'golfcourseapi',
-    externalId: api.id,
-    location: formatLocation(api.location),
+    source: 'opengc',
+    externalId: course.id,
+    location: formatLocation(club),
   }
 }
 
-// Per-hole pars from the first tee that lists holes (par doesn't vary by tee).
-function buildPars(api) {
-  const groups = [...(api.tees?.male || []), ...(api.tees?.female || [])]
-  const withHoles = groups.find((t) => Array.isArray(t.holes) && t.holes.length > 0)
-  if (!withHoles) return []
-  return withHoles.holes.map((h) => (typeof h.par === 'number' ? h.par : null)).filter((p) => p != null)
+// A club can hold several courses; prefer the most complete one that actually
+// carries a usable scorecard.
+function pickPrimaryCourse(courses) {
+  const usable = (Array.isArray(courses) ? courses : []).filter((c) => teesOf(c).length > 0)
+  if (usable.length === 0) return null
+  return usable.sort((a, b) => (b.completenessScore || 0) - (a.completenessScore || 0))[0]
 }
 
-// Merge male + female tees into one list with unique ids. If a tee name appears
-// in both, the female one is suffixed "(W)" so they stay distinguishable.
-function buildTees(api) {
-  const male = api.tees?.male || []
-  const female = api.tees?.female || []
-  const maleNames = new Set(male.map((t) => (t.tee_name || '').toLowerCase()))
+// The tees of a course's most recent scorecard version.
+function teesOf(course) {
+  const versions = course?.scorecardCurrent?.versions
+  if (!Array.isArray(versions) || versions.length === 0) return []
+  const latest = versions[versions.length - 1]
+  return Array.isArray(latest?.tees) ? latest.tees : []
+}
+
+// Per-hole pars from the first tee that lists a full set of numeric pars (par
+// doesn't vary by tee), ordered by hole number.
+function buildPars(course) {
+  for (const tee of teesOf(course)) {
+    const holes = [...(tee.holes || [])].sort((a, b) => (a.number || 0) - (b.number || 0))
+    const pars = holes.map((h) => (typeof h.par === 'number' ? h.par : null))
+    if (pars.length > 0 && pars.every((p) => p != null)) return pars
+  }
+  return []
+}
+
+// Map scorecard tees → scorePulse tees, keeping only those with a rating +
+// slope (needed for the handicap) and unique ids.
+function buildTees(course) {
   const out = []
   const seen = new Set()
-  const add = (t, isFemale) => {
-    if (t.course_rating == null || t.slope_rating == null) return
-    let name = t.tee_name || 'Tee'
-    if (isFemale && maleNames.has(name.toLowerCase())) name = `${name} (W)`
-    let id = slugify(name) || 'tee'
+  for (const t of teesOf(course)) {
+    if (typeof t.rating !== 'number' || typeof t.slope !== 'number') continue
+    const name = t.name || 'Tee'
+    let id = slugify(t.id || name) || 'tee'
     let n = 2
-    while (seen.has(id)) id = `${slugify(name) || 'tee'}-${n++}`
+    while (seen.has(id)) id = `${slugify(t.id || name) || 'tee'}-${n++}`
     seen.add(id)
-    out.push({ id, name, rating: t.course_rating, slope: t.slope_rating })
+    out.push({ id, name, rating: t.rating, slope: t.slope })
   }
-  male.forEach((t) => add(t, false))
-  female.forEach((t) => add(t, true))
   return out
 }
 
-// Combine club + course name, avoiding the common "X — X" duplication when the
-// API repeats the same value in both fields.
-function courseName(c) {
-  const club = (c.club_name || '').trim()
-  const course = (c.course_name || '').trim()
-  if (!club) return course || 'Unnamed course'
-  if (!course || course.toLowerCase() === club.toLowerCase()) return club
-  return `${club} — ${course}`
+// Club + course name, avoiding "X — X" when the course just repeats the club.
+function courseName(club, course) {
+  const clubName = (club.name || '').trim()
+  const courseNm = (course.name || '').trim()
+  if (!clubName) return courseNm || 'Unnamed course'
+  if (!courseNm || courseNm.toLowerCase() === clubName.toLowerCase()) return clubName
+  if (clubName.toLowerCase().includes(courseNm.toLowerCase())) return clubName
+  return `${clubName} — ${courseNm}`
 }
 
 function slugify(s) {
   return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
 }
 
-function formatLocation(loc) {
-  if (!loc) return ''
-  return [loc.city, loc.state, loc.country].filter(Boolean).join(', ')
+function formatLocation(o) {
+  if (!o) return ''
+  return [o.city, o.state].filter(Boolean).join(', ')
 }
