@@ -119,11 +119,15 @@ async function getCourses(clubId) {
   const out = []
   for (const course of usable) {
     const pars = buildPars(course)
-    let tees = buildTees(course)
-    if (pars.length === 0 || tees.length === 0) continue
+    if (pars.length === 0) continue
 
     const displayName = multi ? course.name || courseName(club, course) : courseName(club, course)
 
+    // Tees (names + rating/slope) come from USGA, the authoritative source.
+    // OpenGC only supplies the per-hole pars. OpenGC's own tees are used only as
+    // a fallback when USGA has no confident match for this course.
+    let tees = []
+    let teeSource = 'opengc'
     const usgaMatch = bestUsgaMatch(displayName, usgaCourses)
     if (usgaMatch) {
       try {
@@ -132,11 +136,17 @@ async function getCourses(clubId) {
           usgaTees = await usgaTeesFor(usgaMatch.courseID)
           teeCache.set(usgaMatch.courseID, usgaTees)
         }
-        tees = overlayTees(tees, usgaTees)
+        const built = teesFromUsga(usgaTees)
+        if (built.length) {
+          tees = built
+          teeSource = 'usga'
+        }
       } catch {
-        // keep OpenGC ratings
+        // fall through to the OpenGC fallback below
       }
     }
+    if (tees.length === 0) tees = buildTees(course) // OpenGC fallback
+    if (tees.length === 0) continue
 
     out.push({
       id: `ogc-${course.id}`,
@@ -144,7 +154,7 @@ async function getCourses(clubId) {
       pars,
       par3: pars.every((p) => p === 3),
       tees,
-      source: 'opengc+usga',
+      source: teeSource === 'usga' ? 'opengc+usga' : 'opengc',
       externalId: course.id,
       location: formatLocation(club),
     })
@@ -270,20 +280,28 @@ function bestUsgaMatch(displayName, usgaCourses) {
   return bestScore >= 0.3 ? best : null
 }
 
-// For each OpenGC tee, overlay the matching USGA tee's rating/slope. Match by
-// name; among same-name USGA tees prefer the men's rating (the convention for an
-// unlabeled color tee), breaking ties by nearest rating to the OpenGC value.
-function overlayTees(baseTees, usgaTees) {
-  return baseTees.map((t) => {
-    const cands = usgaTees.filter((u) => normTee(u.name) === normTee(t.name))
-    if (cands.length === 0) return t
-    const men = cands.filter((u) => (u.gender || '').toUpperCase() === 'M')
-    const pool = men.length ? men : cands
-    const best = pool.reduce((a, b) =>
-      Math.abs(b.rating - t.rating) < Math.abs(a.rating - t.rating) ? b : a
-    )
-    return { ...t, rating: best.rating, slope: best.slope, ratingSource: 'usga' }
-  })
+// Build the tee list straight from USGA: men's tees first, then women's — a
+// women's tee whose name collides with a men's one is suffixed "(W)" so both
+// stay selectable. Unique ids.
+function teesFromUsga(usgaTees) {
+  const isWomen = (t) => (t.gender || '').toUpperCase() === 'F'
+  const men = usgaTees.filter((t) => !isWomen(t))
+  const women = usgaTees.filter(isWomen)
+  const menNames = new Set(men.map((t) => normTee(t.name)))
+  const out = []
+  const seen = new Set()
+  const add = (t, women) => {
+    let name = t.name || 'Tee'
+    if (women && menNames.has(normTee(name))) name = `${name} (W)`
+    let id = slugify(name) || 'tee'
+    let n = 2
+    while (seen.has(id)) id = `${slugify(name) || 'tee'}-${n++}`
+    seen.add(id)
+    out.push({ id, name, rating: t.rating, slope: t.slope, ratingSource: 'usga' })
+  }
+  men.forEach((t) => add(t, false))
+  women.forEach((t) => add(t, true))
+  return out
 }
 
 // ==== Naming / text helpers ====
