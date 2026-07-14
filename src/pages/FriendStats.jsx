@@ -247,7 +247,7 @@ export default function FriendStats() {
               {sorted.map((a) => {
                 const earned = earnedSet.has(a.id)
                 return (
-                  <div className={`achievement ${earned ? '' : 'locked'}`} key={a.id}>
+                  <div className={`achievement ${earned ? 'earned' : 'locked'}`} key={a.id}>
                     <div
                       className="badge"
                       style={earned ? {
