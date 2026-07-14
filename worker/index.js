@@ -103,24 +103,39 @@ async function getCourses(clubId) {
   const club = data?.data
   if (!club) return []
 
-  const usable = (Array.isArray(club.courses) ? club.courses : []).filter((c) => teesOf(c).length > 0)
-  const multi = usable.length > 1
+  // Most-complete records first, so a kept course beats its duplicate.
+  const usable = (Array.isArray(club.courses) ? club.courses : [])
+    .filter((c) => teesOf(c).length > 0)
+    .sort((a, b) => (b.completenessScore || 0) - (a.completenessScore || 0))
 
-  // Best-effort USGA enrichment: look the facility up once, then match each
-  // OpenGC course to a USGA course and overlay tee ratings.
+  // Look the facility up once in USGA (best-effort).
   let usgaCourses = []
   try {
     usgaCourses = await usgaSearchFacility(club)
   } catch {
-    usgaCourses = [] // fall back to OpenGC ratings
+    usgaCourses = []
   }
-  const teeCache = new Map()
 
-  const out = []
+  // Match each OpenGC course to a USGA course, then dedup: OpenGC sometimes
+  // lists the same physical course twice. Courses resolving to the same USGA
+  // course (or, unmatched, the same par layout) collapse to one; genuinely
+  // different courses (e.g. a 27-hole facility's pairings) are kept.
+  const picked = []
+  const seen = new Set()
   for (const course of usable) {
     const pars = buildPars(course)
     if (pars.length === 0) continue
+    const usgaMatch = bestUsgaMatch(course.name || courseName(club, course), usgaCourses)
+    const key = usgaMatch ? `usga:${usgaMatch.courseID}` : `pars:${pars.join('-')}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    picked.push({ course, pars, usgaMatch })
+  }
 
+  const multi = picked.length > 1
+  const teeCache = new Map()
+  const out = []
+  for (const { course, pars, usgaMatch } of picked) {
     const displayName = multi ? course.name || courseName(club, course) : courseName(club, course)
 
     // Tees (names + rating/slope) come from USGA, the authoritative source.
@@ -128,7 +143,6 @@ async function getCourses(clubId) {
     // a fallback when USGA has no confident match for this course.
     let tees = []
     let teeSource = 'opengc'
-    const usgaMatch = bestUsgaMatch(displayName, usgaCourses)
     if (usgaMatch) {
       try {
         let usgaTees = teeCache.get(usgaMatch.courseID)
