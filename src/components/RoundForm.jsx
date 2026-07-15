@@ -105,7 +105,11 @@ export default function RoundForm({
   // and default the tee straight from the course object to avoid a state race).
   const selectCourse = (course) => {
     setCourseId(course.id)
-    setHoles(course.pars.map((par) => ({ par, score: null, putts: null, ob: null, gir: false })))
+    setHoles(course.pars.map((par, i) => ({
+      par,
+      si: course.strokeIndexes?.[i] ?? null,
+      score: null, putts: null, ob: null, gir: false,
+    })))
     setTeeId(course.tees?.[0]?.id || '')
     setResults([])
     setCourseChoices(null)
@@ -277,6 +281,7 @@ export default function RoundForm({
         par: typeof h.par === 'number' ? h.par : null,
         score: typeof h.score === 'number' ? h.score : null,
       }
+      if (typeof h.si === 'number') out.si = h.si
       if (typeof h.putts === 'number') out.putts = h.putts
       if (typeof h.ob === 'number' && h.ob > 0) out.ob = h.ob
       if (h.gir === true) out.gir = true
@@ -497,6 +502,9 @@ export default function RoundForm({
               <div className="muted" style={{ fontSize: '0.85rem', marginTop: 10 }}>
                 Can't find it? Choose “+ Custom course…” to enter the pars manually.
               </div>
+              <div className="muted" style={{ fontSize: '0.8rem', marginTop: 4 }}>
+                Hole info (par &amp; stroke index) from OpenGC · course &amp; slope ratings from USGA.
+              </div>
             </div>
           )}
           <label
@@ -707,6 +715,7 @@ function resolveInitialCourseId(initialRound, courses, getCourse) {
 function toFormHole(h) {
   return {
     par: typeof h.par === 'number' ? h.par : null,
+    si: typeof h.si === 'number' ? h.si : null,
     score: typeof h.score === 'number' ? h.score : null,
     putts: typeof h.putts === 'number' ? h.putts : null,
     ob: typeof h.ob === 'number' ? h.ob : null,
@@ -716,13 +725,20 @@ function toFormHole(h) {
 
 function makeHolesFor(courseId, defaultCount, getCourse) {
   const c = getCourse(courseId)
-  if (c) return c.pars.map((par) => ({ par, score: null, putts: null, ob: null, gir: false }))
+  if (c) {
+    return c.pars.map((par, i) => ({
+      par,
+      si: c.strokeIndexes?.[i] ?? null,
+      score: null, putts: null, ob: null, gir: false,
+    }))
+  }
   return blankHoles(defaultCount, true)
 }
 
 function blankHoles(count, editablePar) {
   return Array.from({ length: count }, () => ({
     par: editablePar ? null : 4,
+    si: null,
     score: null,
     putts: null,
     ob: null,

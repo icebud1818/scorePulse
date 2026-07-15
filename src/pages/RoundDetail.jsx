@@ -4,7 +4,7 @@ import { holesPlayed, isIncomplete, isParThreeCourse, isScramble, scoreColor } f
 
 export default function RoundDetail() {
   const { id } = useParams()
-  const { rounds, removeRound, loading } = useData()
+  const { rounds, removeRound, getCourse, loading } = useData()
   const nav = useNavigate()
 
   if (loading) return <div className="container center muted">Loading…</div>
@@ -28,6 +28,11 @@ export default function RoundDetail() {
   const diff = round.totalScore - round.totalPar
   const incomplete = isIncomplete(round)
   const played = holesPlayed(round)
+  // Stroke index per hole: prefer what's stored on the round; fall back to the
+  // course (covers rounds logged before stroke index was captured).
+  const course = round.courseId ? getCourse(round.courseId) : null
+  const strokeIndexOf = (h, i) =>
+    typeof h.si === 'number' ? h.si : course?.strokeIndexes?.[i] ?? null
   const breakdown = scoreBreakdown(round)
   const maxCount = Math.max(1, ...breakdown.map((c) => c.count))
 
@@ -84,6 +89,7 @@ export default function RoundDetail() {
             <tr>
               <th>Hole</th>
               <th>Par</th>
+              <th>HCP</th>
               <th>Strokes</th>
               <th>Score</th>
               <th>Putts</th>
@@ -99,6 +105,7 @@ export default function RoundDetail() {
                 <tr key={i} style={scored ? undefined : { opacity: 0.5 }}>
                   <td>{i + 1}</td>
                   <td>{h.par ?? '—'}</td>
+                  <td className="muted">{strokeIndexOf(h, i) ?? '—'}</td>
                   <td><strong>{h.score ?? '—'}</strong></td>
                   <td style={scored ? { color: scoreColor(d), fontWeight: 600 } : undefined} className={scored ? undefined : 'muted'}>
                     {scored ? (d > 0 ? `+${d}` : d) : '—'}
@@ -132,6 +139,10 @@ export default function RoundDetail() {
           </div>
         </div>
       )}
+
+      <p className="muted" style={{ marginTop: 16, fontSize: '0.8rem' }}>
+        Hole info (par &amp; stroke index) from OpenGC · course &amp; slope ratings from USGA.
+      </p>
     </div>
   )
 }

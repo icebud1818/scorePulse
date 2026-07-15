@@ -166,6 +166,7 @@ async function getCourses(clubId) {
       id: `ogc-${course.id}`,
       name: displayName,
       pars,
+      strokeIndexes: buildStrokeIndexes(course),
       par3: pars.every((p) => p === 3),
       tees,
       source: teeSource === 'usga' ? 'opengc+usga' : 'opengc',
@@ -190,6 +191,26 @@ function buildPars(course) {
     if (pars.length > 0 && pars.every((p) => p != null)) return pars
   }
   return []
+}
+
+// Per-hole stroke index (hole handicap) from the first tee that lists a full,
+// valid set — i.e. a permutation of 1..N. Returns [] if none is trustworthy, so
+// the handicap calc can fall back to gross scoring.
+function buildStrokeIndexes(course) {
+  for (const tee of teesOf(course)) {
+    const holes = [...(tee.holes || [])].sort((a, b) => (a.number || 0) - (b.number || 0))
+    const si = holes.map((h) => (typeof h.handicapIndex === 'number' ? h.handicapIndex : null))
+    if (si.length > 0 && si.every((x) => x != null) && isValidStrokeIndex(si)) return si
+  }
+  return []
+}
+
+// A valid stroke index is exactly the numbers 1..N, each used once.
+function isValidStrokeIndex(si) {
+  const seen = new Set(si)
+  if (seen.size !== si.length) return false
+  for (let i = 1; i <= si.length; i++) if (!seen.has(i)) return false
+  return true
 }
 
 function buildTees(course) {
