@@ -157,6 +157,28 @@ export function DataProvider({ children }) {
     [user, rounds, earnedIds, syncAchievements]
   )
 
+  // One-time backfill: write a course's per-hole stroke index onto the course
+  // catalog doc (so future rounds inherit it) and onto every existing round
+  // played there. Returns how many rounds were updated.
+  const backfillCourseStrokeIndex = useCallback(
+    async (courseId, strokeIndexes) => {
+      if (!user) throw new Error('Not authenticated')
+      const course = courses.find((c) => c.id === courseId)
+      if (course) await saveCourse({ ...course, strokeIndexes })
+      const affected = rounds.filter((r) => r.courseId === courseId)
+      for (const r of affected) {
+        const holes = (r.holes || []).map((h, i) => ({
+          ...h,
+          si: typeof strokeIndexes[i] === 'number' ? strokeIndexes[i] : h.si ?? null,
+        }))
+        await updateRoundFs(user.uid, r.id, { holes })
+      }
+      await reload()
+      return affected.length
+    },
+    [user, courses, rounds, reload]
+  )
+
   const clearLastEarned = useCallback(() => setLastEarned([]), [])
 
   // Toggle a manually-tracked achievement (e.g. "Chip-In"). Writes/removes the
@@ -189,6 +211,7 @@ export function DataProvider({ children }) {
         editRound,
         removeRound,
         setManualAchievement,
+        backfillCourseStrokeIndex,
         lastEarned,
         clearLastEarned,
         reload,

@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthContext.jsx'
 import { useTheme } from '../theme/ThemeContext.jsx'
 import { firebaseConfigured } from '../firebase.js'
 import { fetchProfile, setProfilePublic, upsertProfile } from '../utils/firestore.js'
+import StrokeIndexBackfill from '../components/StrokeIndexBackfill.jsx'
 
 export default function Settings() {
   const { user, updateDisplayName } = useAuth()
@@ -148,6 +149,8 @@ export default function Settings() {
               : 'Only you can see your stats. Switch to Public to let friends look you up by email.'}
         </div>
       </div>
+
+      <StrokeIndexBackfill />
     </div>
   )
 }
