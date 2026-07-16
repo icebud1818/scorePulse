@@ -48,7 +48,7 @@ export const ACHIEVEMENTS = [
   {
     id: 'first-round',
     name: 'First Round',
-    description: 'Log your first round on scorePulse.',
+    description: 'Log your first round on Birdie Quest.',
     check: (round, allRounds) => allRounds.length === 0,
   },
   {

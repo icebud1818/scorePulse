@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { FlagIcon, PulseIcon, TargetIcon, TrophyIcon } from '../components/Icons.jsx'
+import { CircleIcon, FlagIcon, FlameIcon, PulseIcon, StarIcon, TrophyIcon } from '../components/Icons.jsx'
 
 // Public marketing / landing page shown at "/" to logged-out visitors.
 // Logged-in users get the Dashboard instead (see App.jsx routing).
@@ -11,7 +11,7 @@ export default function Home() {
           <span className="eyebrow">Golf tracking, minus the clutter</span>
           <h1>
             Know your game.<br />
-            Watch your <span className="gradient-text">score pulse</span>.
+            Chase every <span className="gradient-text">birdie</span>.
           </h1>
           <p className="lead">
             Log every round, track a running handicap, and see exactly where
@@ -73,14 +73,14 @@ export default function Home() {
         <div className="card center cta-card">
           <h2 style={{ marginTop: 0 }}>Ready to find your baseline?</h2>
           <p className="muted" style={{ maxWidth: '48ch', margin: '0 auto 20px' }}>
-            Log your first round in under a minute and let scorePulse do the math.
+            Log your first round in under a minute and let Birdie Quest do the math.
           </p>
           <Link to="/signup"><button className="primary btn-lg">Create your free account</button></Link>
         </div>
       </section>
 
       <footer className="home-footer">
-        <span className="brand">score<span className="pulse">Pulse</span></span>
+        <span className="brand">Birdie<span className="pulse"> Quest</span></span>
         <span className="muted">Personal golf tracking · built for the range and the course.</span>
       </footer>
     </div>
@@ -96,17 +96,27 @@ const FEATURES = [
   {
     icon: <PulseIcon size={24} />,
     title: 'A handicap that keeps up',
-    desc: 'Every round feeds a running differential so you always know your number. Scrambles and partial rounds are kept out automatically.',
+    desc: 'Tee-adjusted with real USGA course and slope ratings, so your number is honest. Scrambles and partial rounds are kept out automatically.',
   },
   {
-    icon: <TargetIcon size={24} />,
-    title: 'Best score per hole',
-    desc: 'See your ideal round on each course — the lowest you\'ve ever carded on every hole, stacked up against par.',
+    icon: <FlameIcon size={24} />,
+    title: 'See your trends',
+    desc: 'A clean chart of every round — track your handicap and scores over time, so you see the direction you\'re heading, not just today\'s number.',
+  },
+  {
+    icon: <StarIcon size={24} />,
+    title: 'Personal records',
+    desc: 'Career totals and lifetime bests — total birdies and eagles, your lowest round, longest par streak, and your best score on every hole.',
   },
   {
     icon: <TrophyIcon size={24} />,
     title: 'Achievements as you climb',
     desc: 'Break 100, break 90, card your first birdie — milestones unlock as your game grows.',
+  },
+  {
+    icon: <CircleIcon size={24} />,
+    title: 'Play with friends',
+    desc: 'Look up friends by email and compare stats side by side — handicaps, best scores, and achievements.',
   },
 ]
 

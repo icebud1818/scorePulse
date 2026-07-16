@@ -10,7 +10,7 @@ export default function Nav() {
   return (
     <nav className="nav">
       <Link to="/" className="brand" onClick={close}>
-        score<span className="pulse">Pulse</span>
+        Birdie<span className="pulse"> Quest</span>
       </Link>
 
       {user && (

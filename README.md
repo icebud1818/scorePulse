@@ -1,4 +1,4 @@
-# scorePulse
+# Birdie Quest
 
 A personal golf tracking web app — log rounds, track achievements, compute a rough handicap, and see your best scores per hole per course.
 
