@@ -62,7 +62,7 @@ Open http://localhost:5173, click **Sign up**, and log your first round.
 
 ## Deploy to GitHub Pages
 
-1. Push this repo to GitHub. The default repo name is `scorePulse` — if you use a different name, edit `base` in `vite.config.js` to match (`/<repo-name>/`).
+1. Push this repo to GitHub. The default repo name is `birdie-quest` — if you use a different name, edit `base` in `vite.config.js` to match (`/<repo-name>/`).
 2. In your GitHub repo, go to **Settings → Pages** and set **Source** to **GitHub Actions**.
 3. Go to **Settings → Secrets and variables → Actions** and add these repository secrets (values from `.env.local`):
    - `VITE_FIREBASE_API_KEY`
