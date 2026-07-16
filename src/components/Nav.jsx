@@ -34,12 +34,14 @@ export default function Nav() {
           <NavLink to="/records" onClick={close}>Records</NavLink>
           <NavLink to="/achievements" onClick={close}>Achievements</NavLink>
           <NavLink to="/friends" onClick={close}>Friends</NavLink>
+          <NavLink to="/faq" onClick={close}>FAQ</NavLink>
           <NavLink to="/settings" onClick={close}>Settings</NavLink>
           <span className="nav-email muted">{user.displayName || user.email}</span>
           <button className="nav-logout" onClick={() => { close(); logout() }}>Log out</button>
         </div>
       ) : (
         <div className="nav-links">
+          <NavLink to="/faq">FAQ</NavLink>
           <NavLink to="/login">Log in</NavLink>
           <Link to="/signup"><button className="primary">Sign up</button></Link>
         </div>

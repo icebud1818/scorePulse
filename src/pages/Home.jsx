@@ -83,6 +83,7 @@ export default function Home() {
       <footer className="home-footer">
         <img src={logo} alt="Birdie Quest" className="brand-logo brand-logo-lg" />
         <span className="muted">Personal golf tracking · built for the range and the course.</span>
+        <Link to="/faq" className="muted">FAQ</Link>
       </footer>
     </div>
   )

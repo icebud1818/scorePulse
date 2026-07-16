@@ -222,6 +222,30 @@ tbody tr:hover { background: var(--row-hover); }
 .error { color: var(--danger); margin: 8px 0; }
 .success { color: var(--accent); margin: 8px 0; }
 
+/* FAQ accordion. */
+.faq .subtitle { margin-top: -8px; margin-bottom: 20px; }
+.faq-item { margin-top: 10px; padding: 0; }
+.faq-item summary {
+  cursor: pointer;
+  padding: 14px 16px;
+  font-weight: 600;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after { content: '+'; color: var(--muted); font-weight: 400; font-size: 1.3rem; }
+.faq-item[open] summary::after { content: '−'; }
+.faq-answer { padding: 0 16px 16px; color: var(--muted); line-height: 1.55; }
+.faq-answer code {
+  background: var(--panel-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
 /* Per-hole stroke index editor (Settings). */
 .si-grid {
   display: grid;

@@ -19,6 +19,7 @@ import Achievements from './pages/Achievements.jsx'
 import Settings from './pages/Settings.jsx'
 import FriendLookup from './pages/FriendLookup.jsx'
 import FriendStats from './pages/FriendStats.jsx'
+import Faq from './pages/Faq.jsx'
 
 // Only wrap logged-in routes with DataProvider so we don't hit Firestore
 // before the user is authenticated.
@@ -47,6 +48,7 @@ function AppRoutes() {
         <Route path="/best" element={wrapProtected(<BestScores />)} />
         <Route path="/records" element={wrapProtected(<Records />)} />
         <Route path="/achievements" element={wrapProtected(<Achievements />)} />
+        <Route path="/faq" element={<Faq />} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/friends" element={<ProtectedRoute><FriendLookup /></ProtectedRoute>} />
         <Route path="/u/:uid" element={<ProtectedRoute><FriendStats /></ProtectedRoute>} />
