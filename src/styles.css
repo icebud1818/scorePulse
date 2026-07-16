@@ -221,6 +221,18 @@ tbody tr:hover { background: var(--row-hover); }
 }
 .error { color: var(--danger); margin: 8px 0; }
 .success { color: var(--accent); margin: 8px 0; }
+
+/* Per-hole stroke index editor (Settings). */
+.si-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 8px;
+  margin: 8px 0;
+}
+.si-cell { display: flex; flex-direction: column; gap: 2px; }
+.si-cell .si-hole { font-size: 0.68rem; color: var(--muted); text-align: center; }
+.si-cell input { text-align: center; padding: 6px 2px; }
+.si-cell input.si-bad { border-color: var(--danger); outline-color: var(--danger); }
 .link-button {
   background: none;
   border: none;
