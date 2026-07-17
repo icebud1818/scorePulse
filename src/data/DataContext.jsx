@@ -165,7 +165,9 @@ export function DataProvider({ children }) {
       if (!user) throw new Error('Not authenticated')
       const course = courses.find((c) => c.id === courseId)
       if (course) await saveCourse({ ...course, strokeIndexes })
-      const affected = rounds.filter((r) => r.courseId === courseId)
+      // Rounds whose stroke index was hand-edited are protected — skip them.
+      const onCourse = rounds.filter((r) => r.courseId === courseId)
+      const affected = onCourse.filter((r) => r.siManual !== true)
       for (const r of affected) {
         const holes = (r.holes || []).map((h, i) => ({
           ...h,
@@ -174,7 +176,7 @@ export function DataProvider({ children }) {
         await updateRoundFs(user.uid, r.id, { holes })
       }
       await reload()
-      return affected.length
+      return { updated: affected.length, skipped: onCourse.length - affected.length }
     },
     [user, courses, rounds, reload]
   )

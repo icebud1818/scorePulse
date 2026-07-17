@@ -62,6 +62,9 @@ export default function RoundForm({
   )
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  // Tracks whether the user hand-edited any hole's stroke index, so the
+  // course-wide backfill can leave this round's values alone.
+  const [siEdited, setSiEdited] = useState(false)
 
   const preset = courseId !== CUSTOM ? getCourse(courseId) : null
 
@@ -302,6 +305,8 @@ export default function RoundForm({
       scramble,
       trackStats,
     }
+    // Once a round's stroke index is hand-edited, protect it from the backfill.
+    if (siEdited || initialRound?.siManual === true) round.siManual = true
     if (tee) round.tee = tee
     const trimmedNotes = notes.trim()
     if (trimmedNotes) round.notes = trimmedNotes
@@ -611,6 +616,7 @@ export default function RoundForm({
                 <tr>
                   <th>Hole</th>
                   <th>Par</th>
+                  <th>HCP</th>
                   <th>Strokes</th>
                   <th>Putts</th>
                   <th>OB</th>
@@ -633,6 +639,18 @@ export default function RoundForm({
                       ) : (
                         h.par
                       )}
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        min="1"
+                        max={holes.length}
+                        value={h.si ?? ''}
+                        onChange={(e) => {
+                          setSiEdited(true)
+                          updateHole(i, 'si', numOrNull(e.target.value))
+                        }}
+                      />
                     </td>
                     <td>
                       <input

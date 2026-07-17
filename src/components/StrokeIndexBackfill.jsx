@@ -60,8 +60,11 @@ export default function StrokeIndexBackfill() {
     setError('')
     setMessage('')
     try {
-      const n = await backfillCourseStrokeIndex(activeId, parsed)
-      setMessage(`Saved ${selected.name} and updated ${n} round${n === 1 ? '' : 's'}.`)
+      const { updated, skipped } = await backfillCourseStrokeIndex(activeId, parsed)
+      setMessage(
+        `Saved ${selected.name} and updated ${updated} round${updated === 1 ? '' : 's'}.` +
+          (skipped ? ` Left ${skipped} manually-edited round${skipped === 1 ? '' : 's'} untouched.` : '')
+      )
     } catch (err) {
       setError(err.message || 'Could not save.')
     } finally {
@@ -75,7 +78,8 @@ export default function StrokeIndexBackfill() {
       <p className="muted" style={{ marginTop: 0 }}>
         Set or correct each hole's stroke index (the “handicap” row on a
         scorecard). It powers the net-double-bogey cap in your handicap and the
-        HCP column on each round.
+        HCP column on each round. Rounds where you hand-edited the stroke index
+        (when editing a round) are left untouched.
       </p>
 
       {played.length === 0 ? (
