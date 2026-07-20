@@ -1,6 +1,32 @@
 import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES, categoryOf, iconForAchievement } from '../data/achievements.js'
 import { useData } from '../data/DataContext.jsx'
 
+// Tiered achievements rendered as a connected progression instead of a grid.
+// Each chain's ids are ordered easiest → hardest.
+const CHAINS = [
+  {
+    key: 'handicap',
+    label: 'Handicap',
+    catId: 'handicap',
+    ids: [
+      'handicap-under-30',
+      'handicap-under-25',
+      'handicap-under-20',
+      'handicap-under-15',
+      'single-digit-handicap',
+      'handicap-under-5',
+      'scratch-handicap',
+      'plus-handicap',
+    ],
+  },
+  {
+    key: 'breaking',
+    label: 'Breaking Barriers',
+    catId: 'scoring',
+    ids: ['break-100', 'break-90', 'break-80'],
+  },
+]
+
 export default function Achievements() {
   const { earnedIds, setManualAchievement, loading } = useData()
 
@@ -9,9 +35,14 @@ export default function Achievements() {
   const earnedSet = new Set(earnedIds)
   const earnedCount = ACHIEVEMENTS.filter((a) => earnedSet.has(a.id)).length
 
+  const byId = new Map(ACHIEVEMENTS.map((a) => [a.id, a]))
+  const chainedIds = new Set(CHAINS.flatMap((c) => c.ids))
+
   // Bucket achievements by category, preserving declaration order within each.
+  // Chained achievements are shown in their chain, not the category grid.
   const byCategory = new Map(ACHIEVEMENT_CATEGORIES.map((c) => [c.id, []]))
   for (const a of ACHIEVEMENTS) {
+    if (chainedIds.has(a.id)) continue
     const cat = categoryOf(a)
     if (byCategory.has(cat)) byCategory.get(cat).push(a)
   }
@@ -22,6 +53,21 @@ export default function Achievements() {
       <div className="muted" style={{ marginBottom: 20 }}>
         {earnedCount} of {ACHIEVEMENTS.length} earned
       </div>
+
+      {CHAINS.map((chain) => {
+        const nodes = chain.ids.map((id) => byId.get(id)).filter(Boolean)
+        if (nodes.length === 0) return null
+        const color = ACHIEVEMENT_CATEGORIES.find((c) => c.id === chain.catId)?.color || '74,222,128'
+        return (
+          <AchievementChain
+            key={chain.key}
+            label={chain.label}
+            color={color}
+            nodes={nodes}
+            earnedSet={earnedSet}
+          />
+        )
+      })}
 
       {ACHIEVEMENT_CATEGORIES.map((cat) => {
         const items = byCategory.get(cat.id)
@@ -102,5 +148,42 @@ export default function Achievements() {
         )
       })}
     </div>
+  )
+}
+
+// A tiered achievement progression: earned tiers, the one you're working toward,
+// then locked tiers, connected as a vertical chain.
+function AchievementChain({ label, color, nodes, earnedSet }) {
+  const currentIdx = nodes.findIndex((a) => !earnedSet.has(a.id))
+  const done = nodes.filter((a) => earnedSet.has(a.id)).length
+
+  return (
+    <section style={{ marginBottom: 28 }}>
+      <div className="row" style={{ alignItems: 'baseline' }}>
+        <h2 style={{ margin: '0 0 10px' }}>{label}</h2>
+        <div className="spacer" />
+        <div className="muted">{done} / {nodes.length}</div>
+      </div>
+      <div className="chain" style={{ '--chain-color': color }}>
+        {nodes.map((a, i) => {
+          const earned = earnedSet.has(a.id)
+          const state = earned ? 'done' : i === currentIdx ? 'current' : 'locked'
+          return (
+            <div className={`chain-node ${state}`} key={a.id}>
+              <div className="chain-marker">
+                <div className="chain-badge">{state === 'locked' ? '🔒' : iconForAchievement(a)}</div>
+              </div>
+              <div className="chain-body">
+                <div className="title">{a.name}</div>
+                <div className="desc">{a.description}</div>
+                <div className="chain-status">
+                  {state === 'done' ? '✓ Earned' : state === 'current' ? 'Working toward' : 'Locked'}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </section>
   )
 }
