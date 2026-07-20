@@ -23,7 +23,10 @@ const CHAINS = [
     key: 'breaking',
     label: 'Breaking Barriers',
     catId: 'scoring',
-    ids: ['break-100', 'break-90', 'break-80', 'even-par-round', 'under-par-round'],
+    ids: [
+      'break-100', 'break-95', 'break-90', 'break-85', 'break-80', 'break-75',
+      'even-par-round', 'under-par-round',
+    ],
   },
   {
     key: 'nine',
@@ -90,7 +93,7 @@ export default function Achievements() {
         {earnedCount} of {ACHIEVEMENTS.length} earned
       </div>
 
-      <div className="grid cols-2" style={{ marginBottom: 28, alignItems: 'start' }}>
+      <div className="grid cols-2" style={{ margin: '8px 0 40px', gap: '40px 20px', alignItems: 'start' }}>
         {CHAINS.map((chain) => {
           const nodes = chain.ids.map((id) => byId.get(id)).filter(Boolean)
           if (nodes.length === 0) return null

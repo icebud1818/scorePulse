@@ -98,10 +98,28 @@ export const ACHIEVEMENTS = [
 
   // ---- Round scoring ----
   {
+    id: 'break-95',
+    name: 'Chipping Away',
+    description: 'Shoot under 95 on an 18-hole round.',
+    check: (round) => round.holes.length === 18 && round.totalScore < 95,
+  },
+  {
+    id: 'break-85',
+    name: 'In the Groove',
+    description: 'Shoot under 85 on an 18-hole round.',
+    check: (round) => round.holes.length === 18 && round.totalScore < 85,
+  },
+  {
     id: 'break-80',
     name: 'Club Champion',
     description: 'Shoot under 80 on an 18-hole round.',
     check: (round) => round.holes.length === 18 && round.totalScore < 80,
+  },
+  {
+    id: 'break-75',
+    name: 'Knocking on Par',
+    description: 'Shoot under 75 on an 18-hole round.',
+    check: (round) => round.holes.length === 18 && round.totalScore < 75,
   },
   {
     id: 'even-par-round',
@@ -528,7 +546,8 @@ const CONSISTENCY_IDS = new Set([
   'bogey-or-better-all', 'par-or-better-all', 'par-after-oob',
 ])
 const SCORING_IDS = new Set([
-  'break-100', 'break-90', 'break-80', 'even-par-round', 'under-par-round',
+  'break-100', 'break-95', 'break-90', 'break-85', 'break-80', 'break-75',
+  'even-par-round', 'under-par-round',
   'break-60-nine', 'break-50-nine', 'break-40-nine', 'break-par-nine', 'par-nine',
 ])
 const VARIETY_IDS = new Set(['play-par-3-course', 'two-rounds-day', 'seven-rounds-week'])
@@ -560,8 +579,11 @@ const ACHIEVEMENT_EMOJI = {
 
   // Scoring (18-hole + nine)
   'break-100': '💯',
+  'break-95': '📈',
   'break-90': '🎯',
+  'break-85': '🏹',
   'break-80': '🥇',
+  'break-75': '🚪',
   'even-par-round': '⚖️',
   'under-par-round': '😍️',
   'break-60-nine': '🌡️',
