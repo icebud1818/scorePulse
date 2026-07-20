@@ -23,7 +23,7 @@ const CHAINS = [
     key: 'breaking',
     label: 'Breaking Barriers',
     catId: 'scoring',
-    ids: ['break-100', 'break-90', 'break-80'],
+    ids: ['break-100', 'break-90', 'break-80', 'even-par-round', 'under-par-round'],
   },
 ]
 
@@ -83,11 +83,9 @@ export default function Achievements() {
 
         return (
           <section key={cat.id} style={{ marginBottom: 28 }}>
-            <div className="row" style={{ alignItems: 'baseline' }}>
-              <h2 style={{ margin: '0 0 4px' }}>{cat.label}</h2>
-              <div className="spacer" />
-              <div className="muted">{done} / {items.length}</div>
-            </div>
+            <h2 style={{ margin: '0 0 4px' }}>
+              {cat.label} <span className="count-tag muted">{done}/{items.length}</span>
+            </h2>
             {isManual && (
               <p className="muted" style={{ marginTop: 0 }}>
                 Feats we can't spot from your scores — check them off as you pull them off.
@@ -159,11 +157,9 @@ function AchievementChain({ label, nodes, earnedSet }) {
 
   return (
     <section>
-      <div className="row" style={{ alignItems: 'baseline' }}>
-        <h2 style={{ margin: '0 0 10px' }}>{label}</h2>
-        <div className="spacer" />
-        <div className="muted">{done} / {nodes.length}</div>
-      </div>
+      <h2 style={{ margin: '0 0 10px' }}>
+        {label} <span className="count-tag muted">{done}/{nodes.length}</span>
+      </h2>
       <div className="chain">
         {nodes.map((a, i) => {
           const earned = earnedSet.has(a.id)
@@ -177,7 +173,7 @@ function AchievementChain({ label, nodes, earnedSet }) {
                 <div className="title">{a.name}</div>
                 <div className="desc">{a.description}</div>
                 <div className="chain-status">
-                  {state === 'done' ? '✓ Earned' : state === 'current' ? 'Working toward' : 'Locked'}
+                  {state === 'done' ? '✓ Earned' : state === 'current' ? 'In Progress' : 'Locked'}
                 </div>
               </div>
             </div>

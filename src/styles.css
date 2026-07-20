@@ -222,6 +222,9 @@ tbody tr:hover { background: var(--row-hover); }
 .error { color: var(--danger); margin: 8px 0; }
 .success { color: var(--accent); margin: 8px 0; }
 
+/* Small count badge next to a section heading, e.g. "Handicap 2/8". */
+.count-tag { font-weight: 400; font-size: 0.85rem; }
+
 /* Achievement chain (tiered progression). --chain-color is set per chain as an
    "r,g,b" string. */
 .chain { display: flex; flex-direction: column; }
