@@ -21,39 +21,43 @@ import FriendLookup from './pages/FriendLookup.jsx'
 import FriendStats from './pages/FriendStats.jsx'
 import Faq from './pages/Faq.jsx'
 
-// Only wrap logged-in routes with DataProvider so we don't hit Firestore
-// before the user is authenticated.
+// A single DataProvider wraps all authed routes (mounted only once the user is
+// logged in), so data loads once per session instead of on every navigation.
 function AppRoutes() {
   const { user } = useAuth()
-  const wrapProtected = (element) => (
-    <ProtectedRoute>
-      <DataProvider>
-        {element}
-        <AchievementToast />
-      </DataProvider>
-    </ProtectedRoute>
+  const protect = (element) => <ProtectedRoute>{element}</ProtectedRoute>
+
+  const routes = (
+    <Routes>
+      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
+      <Route path="/" element={user ? protect(<Dashboard />) : <Home />} />
+      <Route path="/add" element={protect(<AddRound />)} />
+      <Route path="/rounds" element={protect(<RoundsList />)} />
+      <Route path="/rounds/:id" element={protect(<RoundDetail />)} />
+      <Route path="/rounds/:id/edit" element={protect(<EditRound />)} />
+      <Route path="/best" element={protect(<BestScores />)} />
+      <Route path="/records" element={protect(<Records />)} />
+      <Route path="/achievements" element={protect(<Achievements />)} />
+      <Route path="/faq" element={<Faq />} />
+      <Route path="/settings" element={protect(<Settings />)} />
+      <Route path="/friends" element={protect(<FriendLookup />)} />
+      <Route path="/u/:uid" element={protect(<FriendStats />)} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 
   return (
     <>
       <Nav />
-      <Routes>
-        <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-        <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
-        <Route path="/" element={user ? wrapProtected(<Dashboard />) : <Home />} />
-        <Route path="/add" element={wrapProtected(<AddRound />)} />
-        <Route path="/rounds" element={wrapProtected(<RoundsList />)} />
-        <Route path="/rounds/:id" element={wrapProtected(<RoundDetail />)} />
-        <Route path="/rounds/:id/edit" element={wrapProtected(<EditRound />)} />
-        <Route path="/best" element={wrapProtected(<BestScores />)} />
-        <Route path="/records" element={wrapProtected(<Records />)} />
-        <Route path="/achievements" element={wrapProtected(<Achievements />)} />
-        <Route path="/faq" element={<Faq />} />
-        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-        <Route path="/friends" element={<ProtectedRoute><FriendLookup /></ProtectedRoute>} />
-        <Route path="/u/:uid" element={<ProtectedRoute><FriendStats /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      {user ? (
+        <DataProvider>
+          {routes}
+          <AchievementToast />
+        </DataProvider>
+      ) : (
+        routes
+      )}
     </>
   )
 }

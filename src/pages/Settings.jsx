@@ -3,7 +3,6 @@ import { useAuth } from '../auth/AuthContext.jsx'
 import { useTheme } from '../theme/ThemeContext.jsx'
 import { firebaseConfigured } from '../firebase.js'
 import { fetchProfile, setProfilePublic, upsertProfile } from '../utils/firestore.js'
-import { DataProvider } from '../data/DataContext.jsx'
 import StrokeIndexBackfill from '../components/StrokeIndexBackfill.jsx'
 
 export default function Settings() {
@@ -151,10 +150,7 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Settings sits outside the app-wide DataProvider, so give this tool its own. */}
-      <DataProvider>
-        <StrokeIndexBackfill />
-      </DataProvider>
+      <StrokeIndexBackfill />
     </div>
   )
 }
