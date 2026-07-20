@@ -25,6 +25,42 @@ const CHAINS = [
     catId: 'scoring',
     ids: ['break-100', 'break-90', 'break-80', 'even-par-round', 'under-par-round'],
   },
+  {
+    key: 'nine',
+    label: 'Nine-Hole Scoring',
+    catId: 'scoring',
+    ids: ['break-60-nine', 'break-50-nine', 'break-40-nine', 'par-nine', 'break-par-nine'],
+  },
+  {
+    key: 'scramble',
+    label: 'Scramble',
+    catId: 'scramble',
+    ids: [
+      'scramble-break-90',
+      'scramble-break-80',
+      'scramble-break-par',
+      'scramble-break-60',
+      'scramble-break-50',
+    ],
+  },
+  {
+    key: 'rounds',
+    label: 'Rounds Logged',
+    catId: 'milestones',
+    ids: [
+      'rounds-10', 'rounds-25', 'rounds-50', 'rounds-75', 'rounds-100', 'rounds-125',
+      'rounds-150', 'rounds-175', 'rounds-200', 'rounds-225', 'rounds-250',
+    ],
+  },
+  {
+    key: 'courses',
+    label: 'Courses Played',
+    catId: 'milestones',
+    ids: [
+      'courses-3', 'courses-5', 'courses-10', 'courses-15', 'courses-20', 'courses-25',
+      'courses-30', 'courses-35', 'courses-40', 'courses-45', 'courses-50',
+    ],
+  },
 ]
 
 export default function Achievements() {
