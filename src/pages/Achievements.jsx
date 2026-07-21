@@ -60,15 +60,7 @@ export default function Achievements() {
                       key={a.id}
                       style={{ cursor: 'pointer' }}
                     >
-                      <div
-                        className="badge"
-                        style={earned ? {
-                          background: `rgba(${cat.color},0.16)`,
-                          border: `1px solid rgba(${cat.color},0.4)`,
-                        } : undefined}
-                      >
-                        {iconForAchievement(a)}
-                      </div>
+                      <div className="badge">{iconForAchievement(a)}</div>
                       <div style={{ flex: 1 }}>
                         <div className="title">{a.name}</div>
                         <div className="desc">{a.description}</div>
@@ -84,18 +76,11 @@ export default function Achievements() {
                 }
                 return (
                   <div className={`achievement ${earned ? 'earned' : 'locked'}`} key={a.id}>
-                    <div
-                      className="badge"
-                      style={earned ? {
-                        background: `rgba(${cat.color},0.16)`,
-                        border: `1px solid rgba(${cat.color},0.4)`,
-                      } : undefined}
-                    >
-                      {iconForAchievement(a)}
-                    </div>
+                    <div className="badge">{iconForAchievement(a)}</div>
                     <div>
                       <div className="title">{a.name}</div>
                       <div className="desc">{a.description}</div>
+                      <div className="status">{earned ? '✓ Earned' : 'Locked'}</div>
                     </div>
                   </div>
                 )
