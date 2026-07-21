@@ -77,7 +77,7 @@ export default function BestScores() {
         <>
           <div className="row" style={{ marginTop: 20 }}>
             <h2 style={{ margin: 0 }}>{selected.name}</h2>
-            {selected.par3 && <span className="tag">Par 3</span>}
+            {selected.par3 && <span className="tag par3">Par 3</span>}
             <div className="spacer" />
             {selected.completed ? (
               <span className="tag complete">✓ Completed</span>

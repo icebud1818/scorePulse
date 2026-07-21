@@ -111,7 +111,7 @@ export default function RoundsList() {
                       <td>
                         <div className="row" style={{ gap: 8 }}>
                           <span style={{ fontWeight: 600 }}>{r.courseName}</span>
-                          {isParThreeCourse(r) && <span className="tag">Par 3</span>}
+                          {isParThreeCourse(r) && <span className="tag par3">Par 3</span>}
                           {incomplete && <span className="tag incomplete">Incomplete</span>}
                           {isScramble(r) && <span className="tag scramble">Scramble</span>}
                         </div>

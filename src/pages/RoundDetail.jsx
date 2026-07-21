@@ -47,7 +47,7 @@ export default function RoundDetail() {
 
       <h1>
         {round.courseName}
-        {isParThreeCourse(round) && <span className="tag" style={{ marginLeft: 10 }}>Par 3</span>}
+        {isParThreeCourse(round) && <span className="tag par3" style={{ marginLeft: 10 }}>Par 3</span>}
         {incomplete && <span className="tag incomplete" style={{ marginLeft: 10 }}>Incomplete</span>}
         {isScramble(round) && <span className="tag scramble" style={{ marginLeft: 10 }}>Scramble</span>}
       </h1>
