@@ -50,13 +50,13 @@ export default function Achievements() {
                 Feats we can't spot from your scores — check them off as you pull them off.
               </p>
             )}
-            <div className="grid cols-2">
+            <div className="grid cols-2 plain-grid">
               {sorted.map((a) => {
                 const earned = earnedSet.has(a.id)
                 if (isManual) {
                   return (
                     <label
-                      className={`achievement ${earned ? 'earned' : 'locked'}`}
+                      className={`achievement plain ${earned ? 'earned' : 'locked'}`}
                       key={a.id}
                       style={{ cursor: 'pointer' }}
                     >
@@ -75,7 +75,7 @@ export default function Achievements() {
                   )
                 }
                 return (
-                  <div className={`achievement ${earned ? 'earned' : 'locked'}`} key={a.id}>
+                  <div className={`achievement plain ${earned ? 'earned' : 'locked'}`} key={a.id}>
                     <div className="badge">{iconForAchievement(a)}</div>
                     <div>
                       <div className="title">{a.name}</div>

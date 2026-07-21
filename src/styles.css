@@ -371,6 +371,14 @@ tbody tr:hover { background: var(--row-hover); }
 }
 .achievement.earned { border-color: rgba(74, 222, 128, 0.5); }
 .achievement.locked { opacity: 0.6; }
+/* Boxless variant — renders like a chain node (badge + text), no card. */
+.achievement.plain {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+.plain-grid { gap: 20px 24px; }
 /* Badge styled like a chain node: ringed green when earned, greyscale locked. */
 .achievement .badge {
   width: 42px; height: 42px; border-radius: 50%;

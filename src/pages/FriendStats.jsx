@@ -247,11 +247,11 @@ export default function FriendStats() {
               <div className="spacer" />
               <div className="muted">{done} / {items.length}</div>
             </div>
-            <div className="grid cols-2">
+            <div className="grid cols-2 plain-grid">
               {sorted.map((a) => {
                 const earned = earnedSet.has(a.id)
                 return (
-                  <div className={`achievement ${earned ? 'earned' : 'locked'}`} key={a.id}>
+                  <div className={`achievement plain ${earned ? 'earned' : 'locked'}`} key={a.id}>
                     <div className="badge">{iconForAchievement(a)}</div>
                     <div>
                       <div className="title">{a.name}</div>
