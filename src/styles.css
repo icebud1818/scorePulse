@@ -561,6 +561,14 @@ tbody tr:hover { background: var(--row-hover); }
 }
 .stat-sub { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
 
+/* Records page: larger, higher-contrast, normal-case box titles for legibility. */
+.records-page .stat-label {
+  font-size: 0.92rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
 .icon-badge {
   flex-shrink: 0;
   width: 34px;

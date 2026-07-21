@@ -90,10 +90,7 @@ export default function BestScores() {
 
           <div className="grid cols-2" style={{ marginTop: 16 }}>
             <div className="card stat-tile interactive">
-              <div className="stat-head">
-                <span className="stat-label">Best score</span>
-                <span className="icon-badge emoji">🏆</span>
-              </div>
+              <div className="stat-label">Best score</div>
               <div className="stat-value">{selected.bestScore ?? '—'}</div>
               <div className="stat-sub">
                 {selected.fullRoundCount
@@ -102,10 +99,7 @@ export default function BestScores() {
               </div>
             </div>
             <div className="card stat-tile interactive">
-              <div className="stat-head">
-                <span className="stat-label">Average score</span>
-                <span className="icon-badge emoji">📊</span>
-              </div>
+              <div className="stat-label">Average score</div>
               <div className="stat-value">
                 {selected.avgScore != null ? selected.avgScore.toFixed(1) : '—'}
               </div>

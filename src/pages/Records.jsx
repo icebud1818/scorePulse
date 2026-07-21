@@ -16,7 +16,7 @@ export default function Records() {
   if (loading) return <div className="container center muted">Loading…</div>
 
   return (
-    <div className="container">
+    <div className="container records-page">
       <h1>Personal records</h1>
 
       {records.roundCount === 0 ? (
