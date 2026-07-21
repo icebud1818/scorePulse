@@ -369,7 +369,7 @@ tbody tr:hover { background: var(--row-hover); }
   border-radius: 6px;
   border: 1px solid var(--border);
 }
-.achievement.earned { border-color: #4ade8047; }
+.achievement.earned { border-color: rgba(74, 222, 128, 0.45); }
 .achievement.locked { opacity: 0.6; }
 /* Badge styled like a chain node: ringed green when earned, greyscale locked. */
 .achievement .badge {
