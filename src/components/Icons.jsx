@@ -66,6 +66,16 @@ export function CircleIcon(props) {
   )
 }
 
+// Ball-in-cup — a circle with a filled center, for putting.
+export function PuttIcon(props) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
+    </Icon>
+  )
+}
+
 export function WarnIcon(props) {
   return (
     <Icon {...props}>
