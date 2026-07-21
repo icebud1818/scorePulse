@@ -324,6 +324,13 @@ export const ACHIEVEMENTS = [
     check: (round) => isParThreeCourse(round),
   },
   {
+    id: 'play-scramble',
+    name: 'Scrambled Eggs',
+    description: 'Play a round in scramble format.',
+    countsAllRounds: true,
+    check: (round) => isScramble(round),
+  },
+  {
     id: 'two-rounds-day',
     name: 'Double Header',
     description: 'Play two full 18-hole rounds in a single day.',
@@ -550,7 +557,7 @@ const SCORING_IDS = new Set([
   'even-par-round', 'under-par-round',
   'break-60-nine', 'break-50-nine', 'break-40-nine', 'break-par-nine', 'par-nine',
 ])
-const VARIETY_IDS = new Set(['play-par-3-course', 'two-rounds-day', 'seven-rounds-week'])
+const VARIETY_IDS = new Set(['play-par-3-course', 'play-scramble', 'two-rounds-day', 'seven-rounds-week'])
 const SEASON_IDS = new Set(['play-spring', 'play-summer', 'play-fall', 'play-winter', 'all-seasons'])
 const HANDICAP_IDS = new Set(['single-digit-handicap', 'scratch-handicap', 'plus-handicap'])
 
@@ -635,6 +642,7 @@ const ACHIEVEMENT_EMOJI = {
 
   // Variety
   'play-par-3-course': '⛳',
+  'play-scramble': '🍳',
   'two-rounds-day': '🔁',
   'seven-rounds-week': '🥳️',
 
