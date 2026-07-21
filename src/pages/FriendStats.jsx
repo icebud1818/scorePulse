@@ -227,7 +227,7 @@ export default function FriendStats() {
         <div className="stat-sub">{achPct}% complete</div>
       </div>
 
-      <AchievementChains earnedSet={earnedSet} />
+      <AchievementChains earnedSet={earnedSet} rounds={rounds} />
 
       {ACHIEVEMENT_CATEGORIES.map((cat) => {
         const items = byCategory.get(cat.id)

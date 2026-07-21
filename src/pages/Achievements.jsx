@@ -3,7 +3,7 @@ import { useData } from '../data/DataContext.jsx'
 import AchievementChains, { CHAINED_IDS } from '../components/AchievementChains.jsx'
 
 export default function Achievements() {
-  const { earnedIds, setManualAchievement, loading } = useData()
+  const { earnedIds, setManualAchievement, loading, rounds } = useData()
 
   if (loading) return <div className="container center muted">Loading…</div>
 
@@ -26,7 +26,7 @@ export default function Achievements() {
         {earnedCount} of {ACHIEVEMENTS.length} earned
       </div>
 
-      <AchievementChains earnedSet={earnedSet} />
+      <AchievementChains earnedSet={earnedSet} rounds={rounds} />
 
       {ACHIEVEMENT_CATEGORIES.map((cat) => {
         const items = byCategory.get(cat.id)
