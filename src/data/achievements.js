@@ -441,7 +441,7 @@ export const ACHIEVEMENTS = [
     { n: 45, name: 'Putt Together' },
     { n: 42, name: 'Lag Master' },
     { n: 39, name: 'Deft Touch' },
-    { n: 36, name: 'Flat Stick' },
+    { n: 36, name: 'Putt Perfect' },
   ].map(({ n, name }) => ({
     id: `putts-${n}`,
     name,
@@ -684,10 +684,10 @@ const ACHIEVEMENT_EMOJI = {
   'first-birdie': '🐦',
   'first-eagle': '🦅',
   'first-albatross': '🕊️',
-  'hole-in-one': '🕳️',
+  'hole-in-one': '1️⃣',
 
   // Streaks & runs
-  'birdie-barrage': '🐦',
+  'birdie-barrage': '🦆',
   'turkey': '🦃',
   'par-train': '🚂',
   'wall-of-pars': '🧱',
@@ -697,7 +697,7 @@ const ACHIEVEMENT_EMOJI = {
   // Consistency
   'up-and-down': '👌',
   'no-three-putts': '🟢',
-  'all-gir': '🟩',
+  'all-gir': '🫑',
   'no-oob-round': '➡️',
   'bogey-or-better-all': '🚫',
   'par-or-better-all': '✨',
@@ -707,7 +707,7 @@ const ACHIEVEMENT_EMOJI = {
 
   // Handicap
   'handicap-under-30': '📉',
-  'handicap-under-25': '🏌️',
+  'handicap-under-25': '🔍',
   'handicap-under-20': '⚔️',
   'handicap-under-15': '🥊',
   'single-digit-handicap': '🔟',
@@ -723,10 +723,10 @@ const ACHIEVEMENT_EMOJI = {
   'scramble-break-50': '👑',
 
   // Tiered chain feats (pars / GIR / birdies / putting)
-  'pars-3': '⛳', 'pars-6': '⛳', 'pars-12': '⛳', 'pars-15': '⛳', 'pars-18': '⛳',
-  'gir-3': '🟩', 'gir-6': '🟩', 'gir-9': '🟩', 'gir-12': '🟩', 'gir-15': '🟩',
-  'birdies-1': '🐦', 'birdies-2': '🐦', 'birdies-4': '🐦', 'birdies-5': '🐦', 'birdies-6': '🐦',
-  'putts-51': '🕳️', 'putts-48': '🕳️', 'putts-45': '🕳️', 'putts-42': '🕳️', 'putts-39': '🕳️', 'putts-36': '🕳️',
+  'pars-3': '🪨', 'pars-6': '🛤️', 'pars-12': '🎵', 'pars-15': '⚙️', 'pars-18': '⭐',
+  'gir-3': '🍏', 'gir-6': '🥦', 'gir-9': '🍐', 'gir-12': '🥬', 'gir-15': '🥒',
+  'birdies-1': '🐤', 'birdies-2': '🐔', 'birdies-4': '🦉', 'birdies-5': '🦜', 'birdies-6': '🦢',
+  'putts-51': '🎳', 'putts-48': '🛼', 'putts-45': '🧩', 'putts-42': '🧲', 'putts-39': '🪶', 'putts-36': '🕳️',
 
   // Variety
   'play-par-3-course': '⛳',
@@ -749,7 +749,7 @@ const ACHIEVEMENT_EMOJI = {
   'play-month-5': '🌷',
   'play-month-6': '😎',
   'play-month-7': '🎆',
-  'play-month-8': '🏖️',
+  'play-month-8': '🌞',
   'play-month-9': '🍁',
   'play-month-10': '🎃',
   'play-month-11': '🍽️',
@@ -764,7 +764,7 @@ const ACHIEVEMENT_EMOJI = {
   'water-skipper': '🌊',
   'drive-the-green': '🟩',
   'long-drive-300': '🚀',
-  'rain-round': '🌧️',
+  'rain-round': '☔',
   'dawn-patrol': '🌅',
   'walking-round': '🚶',
   'abroad-round': '✈️',
