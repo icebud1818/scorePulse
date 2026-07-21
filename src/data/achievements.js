@@ -314,6 +314,30 @@ export const ACHIEVEMENTS = [
         (h) => typeof h.ob === 'number' && h.ob > 0 && h.score != null && h.par != null && h.score <= h.par
       ),
   },
+  {
+    id: 'clean-card',
+    name: 'Clean Card',
+    description: 'Play a full 18-hole round with no out-of-bounds and no three-putts.',
+    check: (round) =>
+      round.holes.length === 18 &&
+      tracksStats(round) &&
+      round.holes.every(
+        (h) =>
+          typeof h.putts === 'number' &&
+          h.putts <= 2 &&
+          !(typeof h.ob === 'number' && h.ob > 0)
+      ),
+  },
+  {
+    id: 'steady-start',
+    name: 'Steady Start',
+    description: 'Make par or better on each of the first three holes.',
+    check: (round) =>
+      round.holes.length >= 3 &&
+      round.holes
+        .slice(0, 3)
+        .every((h) => typeof h.score === 'number' && typeof h.par === 'number' && h.score <= h.par),
+  },
 
   // ---- Participation (count every round, even par-3 / scramble / partial) ----
   {
@@ -371,6 +395,61 @@ export const ACHIEVEMENTS = [
     description: `Play ${n} different courses.`,
     countsAllRounds: true,
     check: (round, allRounds) => distinctCourses([round, ...allRounds]) >= n,
+  })),
+
+  // ---- Tiered per-round feats (shown as chains). The 9-par, 18-GIR and
+  // 3-birdie tiers reuse Wall of Pars / Perfect Greens / Birdie Barrage. ----
+  ...[
+    { n: 3, name: 'Steady' },
+    { n: 6, name: 'On Track' },
+    { n: 12, name: 'Metronome' },
+    { n: 15, name: 'Automatic' },
+    { n: 18, name: 'Par Perfect' },
+  ].map(({ n, name }) => ({
+    id: `pars-${n}`,
+    name,
+    description: `Make ${n} pars in a single round.`,
+    check: (round) => round.holes.filter(isPar).length >= n,
+  })),
+  ...[
+    { n: 3, name: 'Green Starter' },
+    { n: 6, name: 'Green Seeker' },
+    { n: 9, name: 'Greens Machine' },
+    { n: 12, name: 'Green Light' },
+    { n: 15, name: 'Green Giant' },
+  ].map(({ n, name }) => ({
+    id: `gir-${n}`,
+    name,
+    description: `Hit ${n} greens in regulation in a single round.`,
+    check: (round) => round.holes.filter((h) => h.gir === true).length >= n,
+  })),
+  ...[
+    { n: 1, name: 'Little Birdie' },
+    { n: 2, name: 'Two Birds' },
+    { n: 4, name: 'Flock' },
+    { n: 5, name: 'Birdie Machine' },
+    { n: 6, name: 'Aviary' },
+  ].map(({ n, name }) => ({
+    id: `birdies-${n}`,
+    name,
+    description: `Make ${n} birdie${n === 1 ? '' : 's'} in a single round.`,
+    check: (round) => round.holes.filter(isBirdie).length >= n,
+  })),
+  ...[
+    { n: 51, name: 'Getting Rolling' },
+    { n: 48, name: 'Smooth Roller' },
+    { n: 45, name: 'Putt Together' },
+    { n: 42, name: 'Lag Master' },
+    { n: 39, name: 'Deft Touch' },
+    { n: 36, name: 'Flat Stick' },
+  ].map(({ n, name }) => ({
+    id: `putts-${n}`,
+    name,
+    description: `Take ${n} putts or fewer over a full 18-hole round.`,
+    check: (round) =>
+      round.holes.length === 18 &&
+      round.holes.every((h) => typeof h.putts === 'number') &&
+      round.holes.reduce((s, h) => s + h.putts, 0) <= n,
   })),
 
   // ---- Scramble scoring (these only count scramble rounds) ----
@@ -551,6 +630,7 @@ const STREAK_IDS = new Set(['birdie-barrage', 'turkey', 'par-train', 'wall-of-pa
 const CONSISTENCY_IDS = new Set([
   'up-and-down', 'no-three-putts', 'all-gir', 'no-oob-round',
   'bogey-or-better-all', 'par-or-better-all', 'par-after-oob',
+  'clean-card', 'steady-start',
 ])
 const SCORING_IDS = new Set([
   'break-100', 'break-95', 'break-90', 'break-85', 'break-80', 'break-75',
@@ -622,6 +702,8 @@ const ACHIEVEMENT_EMOJI = {
   'bogey-or-better-all': '🚫',
   'par-or-better-all': '✨',
   'par-after-oob': '💪',
+  'clean-card': '🧼',
+  'steady-start': '🚦',
 
   // Handicap
   'handicap-under-30': '📉',
@@ -639,6 +721,12 @@ const ACHIEVEMENT_EMOJI = {
   'scramble-break-par': '🔮️',
   'scramble-break-60': '🤖️',
   'scramble-break-50': '👑',
+
+  // Tiered chain feats (pars / GIR / birdies / putting)
+  'pars-3': '⛳', 'pars-6': '⛳', 'pars-12': '⛳', 'pars-15': '⛳', 'pars-18': '⛳',
+  'gir-3': '🟩', 'gir-6': '🟩', 'gir-9': '🟩', 'gir-12': '🟩', 'gir-15': '🟩',
+  'birdies-1': '🐦', 'birdies-2': '🐦', 'birdies-4': '🐦', 'birdies-5': '🐦', 'birdies-6': '🐦',
+  'putts-51': '🕳️', 'putts-48': '🕳️', 'putts-45': '🕳️', 'putts-42': '🕳️', 'putts-39': '🕳️', 'putts-36': '🕳️',
 
   // Variety
   'play-par-3-course': '⛳',

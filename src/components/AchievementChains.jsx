@@ -58,6 +58,26 @@ export const CHAINS = [
       'courses-30', 'courses-35', 'courses-40', 'courses-45', 'courses-50',
     ],
   },
+  {
+    key: 'gir',
+    label: 'Greens in Regulation',
+    ids: ['gir-3', 'gir-6', 'gir-9', 'gir-12', 'gir-15', 'all-gir'],
+  },
+  {
+    key: 'putting',
+    label: 'Putting',
+    ids: ['putts-51', 'putts-48', 'putts-45', 'putts-42', 'putts-39', 'putts-36'],
+  },
+  {
+    key: 'pars',
+    label: 'Pars',
+    ids: ['pars-3', 'pars-6', 'wall-of-pars', 'pars-12', 'pars-15', 'pars-18'],
+  },
+  {
+    key: 'birdies',
+    label: 'Birdies',
+    ids: ['birdies-1', 'birdies-2', 'birdie-barrage', 'birdies-4', 'birdies-5', 'birdies-6'],
+  },
 ]
 
 // Ids shown in a chain — excluded from the normal category grids.
