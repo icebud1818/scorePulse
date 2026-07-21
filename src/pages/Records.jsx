@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useData } from '../data/DataContext.jsx'
 import { isParThreeCourse, isScramble, tracksStats } from '../utils/rounds.js'
-import { TrophyIcon, TargetIcon, FlagIcon, CircleIcon, StarIcon, FlameIcon } from '../components/Icons.jsx'
 
 // Personal Records ("PRs") — bests and career totals across all rounds.
 //
@@ -57,12 +56,12 @@ export default function Records() {
 }
 
 function RecordCard({ record }) {
-  const { label, display, round, icon, badge } = record
+  const { label, display, round, icon } = record
   return (
     <div className="card interactive">
       <div className="stat-head">
         <span className="stat-label">{label}</span>
-        <span className={`icon-badge ${badge || ''}`}>{icon}</span>
+        <span className="icon-badge emoji">{icon}</span>
       </div>
       <div className="stat-value">{display ?? '—'}</div>
       {round ? (
@@ -182,15 +181,15 @@ function computeRecords(allRounds) {
   const birdieStreak = pick((r) => longestStreak(r, (s, p) => s <= p - 1) || null, higher)
 
   const roundRecords = [
-    rec('lowest-18', 'Lowest round', lowest18, (v) => v, <TrophyIcon />, ''),
-    rec('best-vs-par', 'Best score', bestVsPar, fmtVsPar, <TargetIcon />, ''),
-    rec('best-nine', 'Lowest 9 (front or back)', bestNine, (v) => v, <FlagIcon />, 'blue'),
-    rec('most-birdies', 'Most birdies in a round', mostBirdies, (v) => v, <StarIcon />, ''),
-    rec('most-pars', 'Most pars in a round', mostPars, (v) => v, <CircleIcon />, ''),
-    rec('fewest-putts', 'Fewest putts in a round', fewestPutts, (v) => v, <CircleIcon />, 'blue'),
-    rec('most-gir', 'Most greens in regulation', mostGir, (v) => v, <TargetIcon />, 'blue'),
-    rec('par-streak', 'Longest par-or-better streak', parStreak, (v) => v, <FlameIcon />, 'orange'),
-    rec('birdie-streak', 'Longest birdie-or-better streak', birdieStreak, (v) => v, <FlameIcon />, 'orange'),
+    rec('lowest-18', 'Lowest round', lowest18, (v) => v, '🏆', ''),
+    rec('best-vs-par', 'Best score', bestVsPar, fmtVsPar, '🎯', ''),
+    rec('best-nine', 'Lowest 9 (front or back)', bestNine, (v) => v, '9️⃣', 'blue'),
+    rec('most-birdies', 'Most birdies in a round', mostBirdies, (v) => v, '🐦', ''),
+    rec('most-pars', 'Most pars in a round', mostPars, (v) => v, '⛳', ''),
+    rec('fewest-putts', 'Fewest putts in a round', fewestPutts, (v) => v, '🕳️', 'blue'),
+    rec('most-gir', 'Most greens in regulation', mostGir, (v) => v, '🟢', 'blue'),
+    rec('par-streak', 'Longest par-or-better streak', parStreak, (v) => v, '🔥', 'orange'),
+    rec('birdie-streak', 'Longest birdie-or-better streak', birdieStreak, (v) => v, '⚡', 'orange'),
   ]
 
   // Rounds logged and holes played count EVERY round (scrambles included);
