@@ -108,11 +108,13 @@ export default function BestScores() {
           </div>
 
           <h3 style={{ margin: '20px 0 8px', fontSize: '1rem' }}>Completion</h3>
-          <div className="progress"><span style={{ width: `${(selected.doneCount / selected.tasks.length) * 100}%` }} /></div>
+          <div className="progress" style={{ marginBottom: 14 }}><span style={{ width: `${(selected.doneCount / selected.tasks.length) * 100}%` }} /></div>
           <div className="grid cols-2 plain-grid">
             {selected.tasks.map((t) => (
               <div className={`achievement plain ${t.done ? 'earned' : 'locked'}`} key={t.id}>
-                <div className="badge">{t.done ? '✓' : '○'}</div>
+                <div className="badge" style={{ color: t.done ? 'var(--accent)' : 'var(--muted)', fontWeight: 700 }}>
+                  {t.done ? '✓' : '○'}
+                </div>
                 <div>
                   <div className="title">{t.label}</div>
                   <div className="desc">{t.detail}</div>
