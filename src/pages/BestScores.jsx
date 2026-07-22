@@ -79,13 +79,7 @@ export default function BestScores() {
             <h2 style={{ margin: 0 }}>{selected.name}</h2>
             {selected.par3 && <span className="tag par3">Par 3</span>}
             <div className="spacer" />
-            {selected.completed ? (
-              <span className="tag complete">✓ Completed</span>
-            ) : (
-              <span className="tag">
-                {selected.doneCount}/{selected.tasks.length} tasks
-              </span>
-            )}
+            {selected.completed && <span className="tag complete">✓ Completed</span>}
           </div>
 
           <div className="grid cols-2" style={{ marginTop: 16 }}>
@@ -107,7 +101,9 @@ export default function BestScores() {
             </div>
           </div>
 
-          <h3 style={{ margin: '20px 0 8px', fontSize: '1rem' }}>Completion</h3>
+          <h3 style={{ margin: '20px 0 8px', fontSize: '1rem' }}>
+            Completion <span className="count-tag muted">{selected.doneCount}/{selected.tasks.length}</span>
+          </h3>
           <div className="progress" style={{ marginBottom: 14 }}><span style={{ width: `${(selected.doneCount / selected.tasks.length) * 100}%` }} /></div>
           <div className="grid cols-2 plain-grid">
             {selected.tasks.map((t) => (
