@@ -102,7 +102,7 @@ export default function BestScores() {
           </div>
 
           <h3 style={{ margin: '20px 0 8px', fontSize: '1rem' }}>
-            Completion <span className="count-tag muted">{selected.doneCount}/{selected.tasks.length}</span>
+            Completion {selected.doneCount}/{selected.tasks.length}
           </h3>
           <div className="progress" style={{ marginBottom: 14 }}><span style={{ width: `${(selected.doneCount / selected.tasks.length) * 100}%` }} /></div>
           <div className="grid cols-2 plain-grid">
